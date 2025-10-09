@@ -144,22 +144,33 @@ public class ReadWord {
                     // 输出 CSV（GBK）
                     try (BufferedWriter csvWriter = new BufferedWriter(
                             new OutputStreamWriter(new FileOutputStream(csvPath), "GBK"))) {
+
                         for (int r = 0; r < rows; r++) {
                             StringBuilder rowBuilder = new StringBuilder();
+
                             for (int c = 0; c < maxCols; c++) {
                                 String cellVal = matrix[r][c];
-                                if (cellVal.contains(",") || cellVal.contains("\"") || cellVal.contains("\n") || cellVal.contains("\r")) {
-                                    String escaped = cellVal.replace("\"", "\"\"").replace("\r", "").replace("\n", "\\n");
-                                    rowBuilder.append("\"").append(escaped).append("\"");
-                                } else {
-                                    rowBuilder.append(cellVal);
-                                }
+                                if (cellVal == null) cellVal = ""; // 防止 null 指针
+
+                                // 转义双引号 -> 两个双引号，并去掉换行符
+                                String escaped = cellVal
+                                        .replace("\"", "\"\"")
+                                        .replace("\r", "")
+                                        .replace("\n", "");
+
+                                // 每个字段都统一用双引号包起来
+                                rowBuilder.append("\"").append(escaped).append("\"");
+
+                                // 列之间加逗号
                                 if (c < maxCols - 1) rowBuilder.append(",");
                             }
+
                             csvWriter.write(rowBuilder.toString());
                             csvWriter.newLine();
                         }
                     }
+
+
                     System.out.println("2.2 输出 CSV 完成 : " + csvPath);
                     return ;
                 }
