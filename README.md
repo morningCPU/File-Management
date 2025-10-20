@@ -12,6 +12,7 @@ password=
 3. main/java/com/morning/v2/test/TestReadWord是整体测试
 
 # 相关文件介绍
+```text
 common 项目工具
     |- GetCourseList 从csv文件获取对象List
     |- GetCsvFileUtil 获取csv文件
@@ -21,3 +22,4 @@ test 测试
 Util 通用工具
     |- DBUtil 数据库连接
     |- ReadWordToCsv 读取word
+```
