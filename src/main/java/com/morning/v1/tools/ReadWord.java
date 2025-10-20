@@ -1,12 +1,11 @@
-package com.morning.tools;
+package com.morning.v1.tools;
 
-import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTVMerge;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STMerge;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,24 +125,9 @@ public class ReadWord {
                         }
                     }
 
-                    // 输出 TXT（UTF-8）
-                    try (BufferedWriter txtWriter = new BufferedWriter(
-                            new OutputStreamWriter(new FileOutputStream(txtPath), "UTF-8"))) {
-                        for (int r = 0; r < rows; r++) {
-                            StringBuilder rowOut = new StringBuilder();
-                            for (int c = 0; c < maxCols; c++) {
-                                String v = matrix[r][c].replace("\r", "").replace("\n", "\\n");
-                                rowOut.append("[").append(v).append("]\t");
-                            }
-                            txtWriter.write(rowOut.toString());
-                            txtWriter.newLine();
-                        }
-                        System.out.println("2.1 输出 txt 完成 : " + csvPath);
-                    }
-
                     // 输出 CSV（GBK）
                     try (BufferedWriter csvWriter = new BufferedWriter(
-                            new OutputStreamWriter(new FileOutputStream(csvPath), "GBK"))) {
+                            new OutputStreamWriter(new FileOutputStream(csvPath), StandardCharsets.UTF_8))) {
 
                         for (int r = 0; r < rows; r++) {
                             StringBuilder rowBuilder = new StringBuilder();
@@ -171,7 +155,7 @@ public class ReadWord {
                     }
 
 
-                    System.out.println("2.2 输出 CSV 完成 : " + csvPath);
+                    System.out.println("2 输出 CSV 完成 : " + csvPath);
                     return ;
                 }
             } else {

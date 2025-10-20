@@ -1,9 +1,11 @@
-import com.morning.database.CsvToMySQL;
-import com.morning.database.CreateTable;
-import com.morning.tools.CleanCsv;
-import com.morning.tools.ConvertEncoding;
-import com.morning.tools.ReadWord;
-import com.morning.tools.SortCsv;
+package com.morning.v1.test;
+
+import com.morning.v1.database.CsvToMySQL;
+import com.morning.v1.database.CreateTable;
+import com.morning.v1.tools.CleanCsv;
+import com.morning.v1.tools.ConvertEncoding;
+import com.morning.v1.tools.ReadWord;
+import com.morning.v1.tools.SortCsv;
 
 import java.io.*;
 import java.util.Properties;

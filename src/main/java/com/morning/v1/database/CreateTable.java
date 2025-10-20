@@ -1,4 +1,4 @@
-package com.morning.database;
+package com.morning.v1.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

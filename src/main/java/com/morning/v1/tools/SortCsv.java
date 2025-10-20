@@ -1,4 +1,4 @@
-package com.morning.tools;
+package com.morning.v1.tools;
 
 import java.io.*;
 import java.nio.charset.Charset;
