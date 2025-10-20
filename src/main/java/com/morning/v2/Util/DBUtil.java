@@ -1,30 +1,35 @@
 package com.morning.v2.Util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class DBUtil {
 
-    // 连接信息（可根据你自己的数据库修改）
-    private static final String URL = "jdbc:mysql://localhost:3306/course?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai";
-    private static final String USER = "root";
-    private static final String PASSWORD = "";
+    private static final Properties PROP = new Properties();
 
     static {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // 注册驱动
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        // 从 classpath 读取 db.properties
+        try (InputStream in = DBUtil.class.getClassLoader().getResourceAsStream("db.properties")) {
+            if (in == null) {
+                throw new RuntimeException("db.properties 不在 classpath 中");
+            }
+            PROP.load(in);
+            Class.forName(PROP.getProperty("driver"));
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("初始化数据库配置失败", e);
         }
     }
 
-    /**
-     * 获取数据库连接
-     */
-    public static Connection getConnection(){
+    public static Connection getConnection() {
         try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+            return DriverManager.getConnection(
+                    PROP.getProperty("url"),
+                    PROP.getProperty("user"),
+                    PROP.getProperty("password"));
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

@@ -108,10 +108,24 @@ public class GetCourseList {
 
     // 去掉英文部分，仅保留中文
     private static String removeEnglish(String text) {
-        if ("null".equals(text) || text == null) return "null";
-        // 删除所有英文字母、空格及常见标点
-        String result = text.replaceAll("[A-Za-z（）()\\[\\]{}.,:;\"'\\-_/]+", "").trim();
-        return result.isEmpty() ? text.trim() : result;
+        if (text == null || "null".equals(text)) return "null";
+        text = text.replace('\u00A0', ' ');
+        // 从第一个英文字母开始截断（含字母、括号、标点、空格）
+        int cut = -1;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            // 只要出现英文字母就记录位置并退出
+            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                cut = i;
+                break;
+            }
+        }
+        if (cut != -1) text = text.substring(0, cut);
+        // 3. 去掉尾部空白、中文括号段、常见英文标点残留
+        text = text.replaceAll("[（(].*[）)]$", "") // 去中文/英文括号及里面内容
+                .replaceAll("[,;:.\\-_/]+$", "") // 去尾部英文标点
+                .trim();
+        return text.isEmpty() ? "null" : text;
     }
 
     private static String extractYear(String fileName) {
