@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.morning.v2.mapper.CourseMapper">
+    <!--插入单个-->
+    <!--boolean insertCourse(@Param("course") Course course);-->
+    <insert id="insertCourse">
+        insert into
+            courses
+        values
+            (DEFAULT, #{year}, #{courseType}, #{courseName}, #{nature}, #{credits}, #{practiceCredits}, #{semester}, #{school},#{indicators}, #{notes})
+    </insert>
+    <!--插入多个-->
+    <!--boolean insertCoursesBatch(@Param("courses") List<Course> courses);-->
+    <insert id="insertCoursesBatch">
+        insert into
+            courses
+        values
+            <foreach collection="courses" item="c" separator=",">
+                (DEFAULT,#{c.year}, #{c.courseType}, #{c.courseName}, #{c.nature}, #{c.credits},#{c.practiceCredits}, #{c.semester}, #{c.school},#{c.indicators}, #{c.notes})
+            </foreach>
+    </insert>
+</mapper>

@@ -14,7 +14,7 @@ public class ReadTest {
     public static void main(String[] args){
         String docxFolder = "src/main/TestExample/";
         String resultFolder = "src/main/TestExample/result/";
-        String dbPath = "src/main/resources/db.properties";
+        String dbPath = "src/main/resources/jdbc.properties";
 
         // 加载数据库配置
         Properties props = new Properties();

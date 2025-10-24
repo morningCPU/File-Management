@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.morning.v2.mapper.TeacherMapper">
+    <!--插入一个-->
+    <!--boolean insertCourse(@Param("teacher") Teacher teacher);-->
+    <insert id="insertCourse">
+        insert ignore into
+            teachers
+        values
+            (#{year},#{selectCode},#{courseCode},#{courseName},#{teachingClass},#{credits},#{nature},#{department},#{teacher},#{title},#{timeLocation},#{preferred},#{status},#{campus})
+    </insert>
+    <!--插入多个-->
+    <!--boolean insertCoursesBatch(@Param("teachers") List<Teacher> teachers);-->
+    <insert id="insertCoursesBatch">
+        insert ignore into
+            teachers
+        values
+            <foreach collection="teachers" item="t" separator=",">
+                (#{t.year},#{t.selectCode},#{t.courseCode},#{t.courseName},#{t.teachingClass},#{t.credits},#{t.nature},#{t.department},#{t.teacher},#{t.title},#{t.timeLocation},#{t.preferred},#{t.status},#{t.campus})
+            </foreach>
+    </insert>
+</mapper>

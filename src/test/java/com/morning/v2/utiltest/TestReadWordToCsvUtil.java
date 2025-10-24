@@ -1,4 +1,4 @@
-package com.morning.v2.test;
+package com.morning.v2.utiltest;
 
 import com.morning.v2.common.GetCsvFilesUtil;
 import org.junit.Test;
