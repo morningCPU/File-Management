@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS courses
 
 CREATE TABLE IF NOT EXISTS teachers
 (
-    year           VARCHAR(10),
+    semester       VARCHAR(100),
     select_code    VARCHAR(100),
     course_code    VARCHAR(100),
     course_name    VARCHAR(100),
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS teachers
     preferred      TEXT,
     status         VARCHAR(100),
     campus         VARCHAR(100),
-    primary key (year, select_code)
+    primary key (semester, select_code)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;

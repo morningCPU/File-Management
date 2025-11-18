@@ -14,8 +14,9 @@ public class TestReadTeacher {
     public void testReadTeacher(){
         SqlSession sqlSession = SqlSessionUtil.getSqlSession(true);
         TeacherMapper mapper = sqlSession.getMapper(TeacherMapper.class);
+        String semester = "2025-2026-1";
         String courseName = "高等数学";
-        List<Teacher> teachers = GetTeacherList.getTeachersByCourseName(courseName);
+        List<Teacher> teachers = GetTeacherList.getTeachersByAndSemesterCourseName(semester,courseName);
         int rows = mapper.insertCoursesBatch(teachers);
         System.out.println(rows);
     }

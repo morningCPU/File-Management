@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class Teacher {
-    private String year;
+    private String semester;
     private String selectCode;
     private String courseCode;
     private String courseName;

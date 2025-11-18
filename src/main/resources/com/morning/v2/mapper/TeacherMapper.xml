@@ -18,7 +18,7 @@
             teachers
         values
             <foreach collection="teachers" item="t" separator=",">
-                (#{t.year},#{t.selectCode},#{t.courseCode},#{t.courseName},#{t.teachingClass},#{t.credits},#{t.nature},#{t.department},#{t.teacher},#{t.title},#{t.timeLocation},#{t.preferred},#{t.status},#{t.campus})
+                (#{t.semester},#{t.selectCode},#{t.courseCode},#{t.courseName},#{t.teachingClass},#{t.credits},#{t.nature},#{t.department},#{t.teacher},#{t.title},#{t.timeLocation},#{t.preferred},#{t.status},#{t.campus})
             </foreach>
     </insert>
 </mapper>
