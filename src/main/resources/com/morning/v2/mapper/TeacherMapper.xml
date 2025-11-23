@@ -3,22 +3,45 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.morning.v2.mapper.TeacherMapper">
+    <!-- 定义ResultMap，将数据库下划线命名映射到Java驼峰命名 -->
+    <resultMap id="TeacherResultMap" type="com.morning.v2.pojo.Teacher">
+        <result property="semester" column="semester"/>
+        <result property="selectCode" column="select_code"/>
+        <result property="courseCode" column="course_code"/>
+        <result property="courseName" column="course_name"/>
+        <result property="teachingClass" column="teaching_class"/>
+        <result property="credits" column="credits"/>
+        <result property="nature" column="nature"/>
+        <result property="department" column="department"/>
+        <result property="teacher" column="teacher"/>
+        <result property="title" column="title"/>
+        <result property="timeLocation" column="time_location"/>
+        <result property="preferred" column="preferred"/>
+        <result property="status" column="status"/>
+        <result property="campus" column="campus"/>
+    </resultMap>
     <!--插入一个-->
     <!--boolean insertCourse(@Param("teacher") Teacher teacher);-->
     <insert id="insertCourse">
         insert ignore into
-            teachers
+            teachers(semester, select_code, course_code, course_name, teaching_class, credits, nature, department, teacher, title, time_location, preferred, status, campus)
         values
-            (#{year},#{selectCode},#{courseCode},#{courseName},#{teachingClass},#{credits},#{nature},#{department},#{teacher},#{title},#{timeLocation},#{preferred},#{status},#{campus})
+            (#{teacher.semester},#{teacher.selectCode},#{teacher.courseCode},#{teacher.courseName},#{teacher.teachingClass},#{teacher.credits},#{teacher.nature},#{teacher.department},#{teacher.teacher},#{teacher.title},#{teacher.timeLocation},#{teacher.preferred},#{teacher.status},#{teacher.campus})
     </insert>
     <!--插入多个-->
     <!--boolean insertCoursesBatch(@Param("teachers") List<Teacher> teachers);-->
     <insert id="insertCoursesBatch">
         insert ignore into
-            teachers
+            teachers(semester, select_code, course_code, course_name, teaching_class, credits, nature, department, teacher, title, time_location, preferred, status, campus)
         values
             <foreach collection="teachers" item="t" separator=",">
                 (#{t.semester},#{t.selectCode},#{t.courseCode},#{t.courseName},#{t.teachingClass},#{t.credits},#{t.nature},#{t.department},#{t.teacher},#{t.title},#{t.timeLocation},#{t.preferred},#{t.status},#{t.campus})
             </foreach>
     </insert>
+    
+    <!--根据学期和课程名称查询教师列表-->
+    <select id="selectTeachersBySemesterAndCourseName" resultMap="TeacherResultMap">
+        select * from teachers
+        where semester = #{semester} and course_name like concat('%', #{courseName}, '%')
+    </select>
 </mapper>

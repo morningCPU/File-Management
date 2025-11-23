@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师信息展示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 分页控件样式 */
+        .pagination-container {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 0 20px 20px;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pagination-btn {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .pagination-btn:disabled {
+            cursor: not-allowed;
+            color: #bfbfbf;
+            background-color: #f5f5f5;
+        }
+
+        .pagination-btn.active {
+            background-color: #1890ff;
+            border-color: #1890ff;
+            color: white;
+        }
+
+        .pagination-ellipsis {
+            padding: 0 8px;
+            color: #666;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .course-info {
+            background-color: #f0f2f5;
+            padding: 15px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .course-info span {
+            margin-right: 20px;
+            color: #666;
+        }
+
+        .course-info strong {
+            color: #333;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .empty-state {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #fafafa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e8e8e8;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 0 20px 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-default:hover {
+            background-color: #e8e8e8;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .course-info {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .course-info span {
+                display: block;
+                margin-right: 0;
+                margin-bottom: 5px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>教师信息展示</h1>
+        </div>
+        <div class="course-info">
+            <span><strong>学期:</strong> <span id="currentSemester">--</span></span>
+            <span><strong>课程名称:</strong> <span id="currentCourseName">--</span></span>
+        </div>
+        <div class="content">
+            <div id="loading" class="loading">加载中，请稍候...</div>
+            <div id="emptyState" class="empty-state">
+                <i>📚</i>
+                <p>暂无教师信息</p>
+            </div>
+            <div id="tableContainer" class="table-container" style="display: none;">
+                <table id="teachersTable">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>课程代码</th>
+                            <th>课程名称</th>
+                            <th>教师姓名</th>
+                            <th>职称</th>
+                            <th>教学班</th>
+                            <th>开课部门</th>
+                            <th>时间地点</th>
+                            <th>学分</th>
+                            <th>课程性质</th>
+                            <th>校区</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachersTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <!-- 分页控件 -->
+            <div id="paginationContainer" class="pagination-container">
+                <div class="pagination-info">
+                    共 <span id="totalItems">0</span> 条记录，第 <span id="currentPage">1</span> / <span
+                        id="totalPages">0</span> 页
+                </div>
+                <div class="pagination-controls">
+                    <button id="prevPageBtn" class="pagination-btn" disabled>上一页</button>
+                    <div id="pageButtons" class="pagination-buttons"></div>
+                    <button id="nextPageBtn" class="pagination-btn" disabled>下一页</button>
+                </div>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button id="backBtn" class="btn btn-default">返回课程列表</button>
+            <button id="refreshBtn" class="btn btn-primary">刷新数据</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取DOM元素
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('emptyState');
+            const tableContainer = document.getElementById('tableContainer');
+            const teachersTableBody = document.getElementById('teachersTableBody');
+            const currentSemester = document.getElementById('currentSemester');
+            const currentCourseName = document.getElementById('currentCourseName');
+            const backBtn = document.getElementById('backBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
+
+            // 分页相关DOM元素
+            const paginationContainer = document.getElementById('paginationContainer');
+            const totalItems = document.getElementById('totalItems');
+            const currentPage = document.getElementById('currentPage');
+            const totalPages = document.getElementById('totalPages');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+            const pageButtons = document.getElementById('pageButtons');
+
+            // 分页相关变量
+            let pageSize = 10; // 每页显示10条记录
+            let currentPageNum = 1;
+            let totalRecords = 0;
+            let allTeachers = []; // 存储所有教师数据
+
+            // 获取URL参数
+            function getUrlParams() {
+                const params = {};
+                const urlParams = new URLSearchParams(window.location.search);
+                for (const [key, value] of urlParams) {
+                    params[key] = decodeURIComponent(value);
+                }
+                return params;
+            }
+
+            const params = getUrlParams();
+            const semester = params.semester || '';
+            const courseName = params.courseName || '';
+
+            // 显示当前课程信息
+            currentSemester.textContent = semester || '未知';
+            currentCourseName.textContent = courseName || '未知';
+
+            // 加载教师数据
+            function loadTeachers() {
+                // 显示加载状态
+                loading.style.display = 'flex';
+                emptyState.style.display = 'none';
+                tableContainer.style.display = 'none';
+                paginationContainer.style.display = 'none';
+                teachersTableBody.innerHTML = '';
+
+                // 如果参数不完整，显示空状态
+                if (!semester || !courseName) {
+                    loading.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                // 调用API获取教师数据
+                fetch(`/api/teachers/list?semester=${encodeURIComponent(semester)}&courseName=${encodeURIComponent(courseName)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('网络响应错误');
+                        }
+                        return response.json();
+                    })
+                    .then(teachers => {
+                        loading.style.display = 'none';
+
+                        // 存储所有教师数据
+                        allTeachers = teachers || [];
+                        totalRecords = allTeachers.length;
+
+                        if (totalRecords === 0) {
+                            emptyState.style.display = 'block';
+                            return;
+                        }
+
+                        tableContainer.style.display = 'block';
+
+                        // 使用分页函数渲染数据
+                        renderTeachersWithPagination();
+                    })
+                    .catch(error => {
+                        console.error('加载教师数据失败:', error);
+                        loading.innerHTML = '<span style="color: #ff4d4f;">加载失败，请稍后重试</span>';
+                    });
+            }
+
+            // 渲染分页按钮
+            function renderPagination() {
+                if (totalRecords === 0) {
+                    paginationContainer.style.display = 'none';
+                    return;
+                }
+
+                paginationContainer.style.display = 'flex';
+
+                const totalPagesNum = Math.ceil(totalRecords / pageSize);
+                console.log('分页信息更新:', { totalRecords, pageSize, currentPageNum, totalPagesNum });
+
+                // 更新分页信息
+                totalItems.textContent = totalRecords;
+                currentPage.textContent = currentPageNum;
+                totalPages.textContent = totalPagesNum;
+
+                // 更新上一页/下一页按钮状态
+                prevPageBtn.disabled = currentPageNum === 1;
+                nextPageBtn.disabled = currentPageNum === totalPagesNum;
+
+                // 清空页码按钮
+                pageButtons.innerHTML = '';
+
+                // 生成分页按钮（简化版本，最多显示10个页码）
+                let startPage = Math.max(1, currentPageNum - 4);
+                let endPage = Math.min(totalPagesNum, startPage + 9);
+
+                // 调整起始页码，确保显示10个页码（如果总页数足够）
+                if (endPage - startPage < 9 && startPage > 1) {
+                    startPage = Math.max(1, endPage - 9);
+                }
+
+                // 显示第一页和省略号（如果需要）
+                if (startPage > 1) {
+                    addPageButton(1);
+                    if (startPage > 2) {
+                        addEllipsis();
+                    }
+                }
+
+                // 显示中间的页码
+                for (let i = startPage; i <= endPage; i++) {
+                    addPageButton(i);
+                }
+
+                // 显示最后一页和省略号（如果需要）
+                if (endPage < totalPagesNum) {
+                    if (endPage < totalPagesNum - 1) {
+                        addEllipsis();
+                    }
+                    addPageButton(totalPagesNum);
+                }
+            }
+
+            // 添加页码按钮
+            function addPageButton(pageNum) {
+                const button = document.createElement('button');
+                button.className = 'pagination-btn';
+                button.textContent = pageNum;
+
+                if (pageNum === currentPageNum) {
+                    button.classList.add('active');
+                }
+
+                button.addEventListener('click', () => {
+                    currentPageNum = pageNum;
+                    renderTeachersWithPagination();
+                });
+
+                pageButtons.appendChild(button);
+            }
+
+            // 添加省略号
+            function addEllipsis() {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'pagination-ellipsis';
+                ellipsis.textContent = '...';
+                pageButtons.appendChild(ellipsis);
+            }
+
+            // 分页渲染教师数据
+            function renderTeachersWithPagination() {
+                const startIndex = (currentPageNum - 1) * pageSize;
+                const endIndex = startIndex + pageSize;
+                const currentPageTeachers = allTeachers.slice(startIndex, endIndex);
+                console.log('渲染第', currentPageNum, '页数据，显示记录范围:', startIndex + 1, '-', endIndex, '共', currentPageTeachers.length, '条记录');
+
+                // 清空表格内容
+                teachersTableBody.innerHTML = '';
+
+                // 渲染当前页的数据
+                currentPageTeachers.forEach((teacher, index) => {
+                    const row = document.createElement('tr');
+                    const displayIndex = startIndex + index + 1; // 正确的序号显示
+                    row.innerHTML = `
+                        <td>${displayIndex}</td>
+                        <td>${teacher.courseCode || '-'}</td>
+                        <td>${teacher.courseName || '-'}</td>
+                        <td>${teacher.teacher || '-'}</td>
+                        <td>${teacher.title || '-'}</td>
+                        <td>${teacher.teachingClass || '-'}</td>
+                        <td>${teacher.department || '-'}</td>
+                        <td>${teacher.timeLocation || '-'}</td>
+                        <td>${teacher.credits || '-'}</td>
+                        <td>${teacher.nature || '-'}</td>
+                        <td>${teacher.campus || '-'}</td>
+                    `;
+                    teachersTableBody.appendChild(row);
+                });
+
+                // 更新分页控件
+                renderPagination();
+            }
+
+            // 初始加载数据
+            loadTeachers();
+
+            // 返回按钮事件
+            backBtn.addEventListener('click', () => {
+                window.location.href = 'courses.html';
+            });
+
+            // 刷新按钮事件
+            refreshBtn.addEventListener('click', () => {
+                currentPageNum = 1; // 刷新时重置到第一页
+                loadTeachers();
+            });
+
+            // 上一页按钮事件
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPageNum > 1) {
+                    currentPageNum--;
+                    renderTeachersWithPagination();
+                }
+            });
+
+            // 下一页按钮事件
+            nextPageBtn.addEventListener('click', () => {
+                const totalPagesNum = Math.ceil(totalRecords / pageSize);
+                if (currentPageNum < totalPagesNum) {
+                    currentPageNum++;
+                    renderTeachersWithPagination();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

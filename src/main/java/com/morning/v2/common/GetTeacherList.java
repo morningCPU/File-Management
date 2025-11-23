@@ -14,38 +14,27 @@ import java.util.*;
 public class GetTeacherList {
 
     /* ========================= 1. 学期映射 ========================= */
-    private static final int KEEP_TERM_COUNT = 10;          // 最近 10 学期
     private static final Map<String, String> TERM_ID_MAP = buildRecentTermMap();
 
-    /** 按时间倒序生成最近 KEEP_TERM_COUNT 个真实学期 */
+    /** 按时间倒序生成最近的学期映射 */
     private static Map<String, String> buildRecentTermMap() {
         Map<String, String> map = new LinkedHashMap<>();
-        LocalDate today = LocalDate.now();
-        int year = today.getYear();
-        int month = today.getMonthValue();
-
-        // 0=秋季(2024-2025-1)  1=春季(2024-2025-2)
-        int currentOffset = (month >= 2 && month <= 7) ? 1 : 0;
-
-        for (int i = 0; i < KEEP_TERM_COUNT; i++) {
-            int offset = currentOffset - i;
-            int startYear = year + offset / 2;
-            int termFlag  = ((offset % 2) + 2) % 2 + 1;          // 1 秋  2 春
-            String termCode = startYear + "-" + (startYear + 1) + "-" + termFlag;
-
-            int termId = 110 + calcTermOffset("2020-2021-1", termCode);
-            map.put(termCode, String.valueOf(termId));
-        }
+        // 手动添加已知的学期和对应的 selectTermId
+        map.put("2020-2021-1", "96");
+        map.put("2020-2021-2", "98");
+        map.put("2021-2022-1", "100");
+        map.put("2021-2022-2", "105");
+        map.put("2022-2023-1", "107");
+        map.put("2022-2023-2", "109");
+        map.put("2023-2024-1", "112");
+        map.put("2023-2024-2", "113");
+        map.put("2024-2025-1", "116");
+        map.put("2024-2025-2", "118");
+        map.put("2025-2026-1", "120");
+        map.put("2025-2026-2", "122");
+        map.put("2026-2027-1", "124");
+        map.put("2026-2027-2", "126");
         return Collections.unmodifiableMap(map);
-    }
-
-    /** 学期偏移量（按 2 学期/学年） */
-    private static int calcTermOffset(String from, String to) {
-        String[] f = from.split("-");
-        String[] t = to.split("-");
-        int y1 = Integer.parseInt(f[0]), y2 = Integer.parseInt(t[0]);
-        int s1 = Integer.parseInt(f[2]), s2 = Integer.parseInt(t[2]);
-        return (y2 - y1) * 2 + (s2 - s1);
     }
 
     /* ========================= 2. 核心抓取 ========================= */
@@ -60,10 +49,10 @@ public class GetTeacherList {
         String termId = TERM_ID_MAP.get(semester);
         if (termId == null) return result;
 
-        String[] parts  = semester.split("-");
+        String[] parts = semester.split("-");
         String termName = parts[0] + "-" + parts[1] + "第" + parts[2] + "学期";
 
-        String baseUrl  = "http://jwc.swjtu.edu.cn/vatuu/CourseAction";
+        String baseUrl = "http://jwc.swjtu.edu.cn/vatuu/CourseAction";
         String btnQuery = URLEncoder.encode("执行查询", StandardCharsets.UTF_8);
         int page = 1;
 
@@ -139,9 +128,9 @@ public class GetTeacherList {
     /** 仅当前学期 */
     public static List<Teacher> getTeachersByCourseNameCurrent(String courseName) {
         LocalDate today = LocalDate.now();
-        int year  = today.getYear();
+        int year = today.getYear();
         int month = today.getMonthValue();
-        int flag  = (month >= 2 && month <= 7) ? 2 : 1;
+        int flag = (month >= 2 && month <= 7) ? 2 : 1;
         int baseYear = flag == 2 ? year : year - 1;
         String currentSemester = baseYear + "-" + (baseYear + 1) + "-" + flag;
         return getTeachersByAndSemesterCourseName(currentSemester, courseName);

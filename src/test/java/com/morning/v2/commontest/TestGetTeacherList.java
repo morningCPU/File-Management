@@ -9,8 +9,8 @@ import java.util.List;
 public class TestGetTeacherList {
     @Test
     public void testGetTeachersByCourseName(){
-        String semester = "2025-2026-1";
-        String courseName = "人工智能";
+        String semester = "2022-2023-1";
+        String courseName = "马克思主义基本原理";
         List<Teacher> teachers = GetTeacherList.getTeachersByAndSemesterCourseName(semester,courseName);
         System.out.println(teachers.size());
         teachers.forEach(System.out::println);

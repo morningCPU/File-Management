@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word文件上传处理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #1890ff;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .upload-box {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .drop-area {
+            border: 2px dashed #d9d9d9;
+            border-radius: 6px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .drop-area:hover {
+            border-color: #1890ff;
+            background-color: #f0f7ff;
+        }
+
+        .drop-area.active {
+            border-color: #52c41a;
+            background-color: #f6ffed;
+        }
+
+        .drop-area-icon {
+            font-size: 64px;
+            color: #d9d9d9;
+            margin-bottom: 16px;
+        }
+
+        .drop-area-text {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .drop-area-hint {
+            font-size: 14px;
+            color: #999;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-primary:active {
+            background-color: #096dd9;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: #fafafa;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .file-icon {
+            margin-right: 10px;
+            color: #1890ff;
+        }
+
+        .file-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-size {
+            color: #999;
+            margin-right: 10px;
+        }
+
+        .remove-btn {
+            color: #ff4d4f;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .remove-btn:hover {
+            background-color: #fff1f0;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .result.success {
+            display: block;
+        }
+
+        .result.failed {
+            display: block;
+            background-color: #fff2e8;
+            border-color: #ffd591;
+        }
+
+        .result-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .result.success .result-title {
+            color: #52c41a;
+        }
+
+        .result.failed .result-title {
+            color: #fa8c16;
+        }
+
+        .result-content {
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1890ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Word文件上传处理系统</h1>
+            <p>支持批量上传Word文件，自动转换为CSV并导入数据库</p>
+        </div>
+
+        <div class="upload-box">
+            <div class="drop-area" id="dropArea">
+                <div class="drop-area-icon">📄</div>
+                <div class="drop-area-text">拖放文件到此处，或点击选择文件</div>
+                <div class="drop-area-hint">支持 .docx 格式，可多选</div>
+                <input type="file" id="fileInput" multiple accept=".docx" />
+            </div>
+
+            <div class="file-list" id="fileList">
+                <!-- 上传的文件列表将显示在这里 -->
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" id="uploadBtn" disabled style="margin-right: 15px;">上传文件</button>
+                <a href="./courses.html" class="btn btn-primary" style="text-decoration: none;">查看课程数据</a>
+                <a href="./dashboard.html" class="btn btn-primary" style="margin-left: 15px;text-decoration: none;">返回控制面板</a>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <span>正在处理文件，请稍候...</span>
+            </div>
+        </div>
+
+        <div class="result" id="result">
+            <div class="result-title" id="resultTitle"></div>
+            <div class="result-content" id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultContent = document.getElementById('resultContent');
+
+        let selectedFiles = [];
+
+        // 处理拖放事件
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.classList.add('active');
+        }
+
+        function unhighlight() {
+            dropArea.classList.remove('active');
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        // 点击区域选择文件
+        dropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            handleFiles(fileInput.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                // 检查文件类型
+                if (!file.name.toLowerCase().endsWith('.docx')) {
+                    showError(`文件 ${file.name} 不是有效的 .docx 文件`);
+                    continue;
+                }
+
+                // 避免重复文件
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            }
+
+            updateFileList();
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <span class="file-icon">📄</span>
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${formatFileSize(file.size)}</span>
+                    <span class="remove-btn" data-index="${index}">移除</span>
+                `;
+                fileList.appendChild(fileItem);
+            });
+
+            // 添加移除按钮事件
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    selectedFiles.splice(index, 1);
+                    updateFileList();
+                    uploadBtn.disabled = selectedFiles.length === 0;
+                });
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        uploadBtn.addEventListener('click', uploadFiles);
+
+        function uploadFiles() {
+            if (selectedFiles.length === 0) {
+                showError('请先选择要上传的文件');
+                return;
+            }
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            // 显示加载状态
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            fetch('/api/files/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+
+                    if (data.success) {
+                        showSuccess(data);
+                        // 清空文件列表
+                        selectedFiles = [];
+                        updateFileList();
+                        uploadBtn.disabled = true;
+                    } else {
+                        showError(data.message || '上传失败');
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    showError('上传过程中发生错误: ' + error.message);
+                });
+        }
+
+        function showSuccess(data) {
+            result.className = 'result success';
+            resultTitle.textContent = '上传成功';
+            resultContent.innerHTML = `
+                <p>成功处理 ${data.processedFiles} 个文件</p>
+                <p>导入课程数据: ${data.courses} 条</p>
+                <p>导入教师数据: ${data.teachers} 条</p>
+                <p>文件已保存到系统中</p>
+            `;
+        }
+
+        function showError(message) {
+            result.className = 'result failed';
+            resultTitle.textContent = '处理失败';
+            resultContent.textContent = message;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .role-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .role-button {
+            padding: 15px 20px;
+            border: 1px solid #d9d9d9;
+            background-color: white;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .role-button:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+            box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+        }
+
+        .role-button:active {
+            background-color: #f0f9ff;
+        }
+
+        .login-footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .login-title {
+                font-size: 20px;
+            }
+
+            .role-button {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1 class="login-title">欢迎登录</h1>
+        <div class="role-options">
+            <button class="role-button" onclick="window.location.href='/admin/dashboard.html'">管理员登录</button>
+            <button class="role-button" onclick="window.location.href='/teacher/welcome.html'">教师登录</button>
+            <button class="role-button" onclick="window.location.href='/reviewer/welcome.html'">审核登录</button>
+        </div>
+        <div class="login-footer">
+            <p>请选择您的身份进行登录</p>
+        </div>
+    </div>
+</body>
+</html>

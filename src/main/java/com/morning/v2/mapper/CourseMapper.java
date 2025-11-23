@@ -8,4 +8,5 @@ import java.util.List;
 public interface CourseMapper {
     int insertCourse(@Param("course") Course course);
     int insertCoursesBatch(@Param("courses") List<Course> courses);
+    List<Course> selectAllCourses();
 }

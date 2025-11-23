@@ -21,4 +21,15 @@
                 (DEFAULT,#{c.year}, #{c.courseType}, #{c.courseName}, #{c.nature}, #{c.credits},#{c.practiceCredits}, #{c.semester}, #{c.school},#{c.indicators}, #{c.notes})
             </foreach>
     </insert>
+    
+    <!--查询所有课程-->    
+    <!--List<Course> selectAllCourses();-->
+    <select id="selectAllCourses" resultType="com.morning.v2.pojo.Course">
+        select
+            id, year, course_type as courseType, course_name as courseName, nature,
+            credits, practice_credits as practiceCredits, semester, school,
+            indicators, notes
+        from
+            courses
+    </select>
 </mapper>

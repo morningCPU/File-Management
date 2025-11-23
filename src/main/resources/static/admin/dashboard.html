@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员控制面板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f0f2f5;
+        }
+
+        .header {
+            background-color: #1890ff;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-logout {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .header-logout:hover {
+            background-color: white;
+            color: #1890ff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .function-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .function-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .function-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .function-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #1890ff;
+        }
+
+        .function-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .function-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .function-button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .function-button:hover {
+            background-color: #40a9ff;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+
+            .container {
+                margin: 20px auto;
+            }
+
+            .welcome-section {
+                padding: 20px;
+            }
+
+            .welcome-title {
+                font-size: 24px;
+            }
+
+            .function-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-title">管理员控制面板</div>
+        <button class="header-logout" onclick="window.location.href='/login.html'">退出登录</button>
+    </header>
+
+    <div class="container">
+        <section class="welcome-section">
+            <h1 class="welcome-title">欢迎回来，管理员</h1>
+            <p class="welcome-subtitle">请选择您需要执行的操作</p>
+        </section>
+
+        <div class="function-cards">
+            <div class="function-card">
+                <div class="function-icon">📤</div>
+                <h2 class="function-title">上传文件</h2>
+                <p class="function-description">上传新的课程文件或教学资料</p>
+                <button class="function-button" onclick="window.location.href='upload.html'">前往上传</button>
+            </div>
+
+            <div class="function-card">
+                <div class="function-icon">📚</div>
+                <h2 class="function-title">查看课程</h2>
+                <p class="function-description">管理和查看所有课程信息</p>
+                <button class="function-button" onclick="window.location.href='/admin/courses.html'">查看课程</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
