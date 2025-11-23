@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.morning.v2.mapper.EvaluationTaskMapper">
+    <!-- 插入任务 -->
+    <!-- int insertTask(@Param("task") EvaluationTask task); -->
+    <insert id="insertTask" useGeneratedKeys="true" keyProperty="id">
+        insert into
+            evaluation_task
+        values
+            (DEFAULT, #{task.taskName}, #{task.createTime}, #{task.creator}, #{task.status}, #{task.description}, #{task.endTime})
+    </insert>
+    
+    <!-- 根据ID查询任务 -->
+    <!-- EvaluationTask selectTaskById(@Param("id") Long id); -->
+    <select id="selectTaskById" resultType="com.morning.v2.pojo.EvaluationTask">
+        select
+            id, task_name as taskName, create_time as createTime, creator,status, description,end_time as endTime
+        from
+            evaluation_task
+        where
+            id = #{id}
+    </select>
+    
+    <!-- 查询所有任务 -->
+    <!-- List<EvaluationTask> selectAllTasks(); -->
+    <select id="selectAllTasks" resultType="com.morning.v2.pojo.EvaluationTask">
+        select
+            id, task_name as taskName, create_time as createTime,creator, status, description,end_time as endTime
+        from
+            evaluation_task
+        order by
+            create_time desc
+    </select>
+    
+    <!-- 更新任务状态 -->
+    <!-- int updateTaskStatus(@Param("id") Long id, @Param("status") String status); -->
+    <update id="updateTaskStatus">
+        update
+            evaluation_task
+        set
+            status = #{status},
+            update_time = now()
+        where
+            id = #{id}
+    </update>
+    
+    <!-- 更新任务信息 -->
+    <!-- int updateTask(@Param("task") EvaluationTask task); -->
+    <update id="updateTask">
+        update
+            evaluation_task
+        set
+            task_name = #{task.taskName},
+            update_time = now(),
+            deadline = #{task.deadline},
+            status = #{task.status},
+            description = #{task.description}
+        where
+            id = #{task.id}
+    </update>
+    
+    <!-- 删除任务 -->
+    <!-- int deleteTask(@Param("id") Long id); -->
+    <delete id="deleteTask">
+        delete from
+            evaluation_task
+        where
+            id = #{id}
+    </delete>
+</mapper>

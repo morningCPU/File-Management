@@ -267,6 +267,7 @@
                             <th>学分</th>
                             <th>课程性质</th>
                             <th>校区</th>
+                            <th>选择</th>
                         </tr>
                     </thead>
                     <tbody id="teachersTableBody">
@@ -336,6 +337,21 @@
             // 显示当前课程信息
             currentSemester.textContent = semester || '未知';
             currentCourseName.textContent = courseName || '未知';
+
+            // 检查是否处于创建任务模式
+            const isCreateTaskMode = params.createTask === 'true';
+
+            // 如果是创建任务模式，添加提示
+            if (isCreateTaskMode) {
+                const taskModeIndicator = document.createElement('div');
+                taskModeIndicator.className = 'task-mode-indicator';
+                taskModeIndicator.style.cssText = 'background-color: #e6f7ff; padding: 10px 20px; text-align: center; font-weight: bold; color: #1890ff;';
+                taskModeIndicator.textContent = '创建任务模式 - 请选择需要评价的教师';
+
+                const container = document.querySelector('.container');
+                const header = document.querySelector('.header');
+                container.insertBefore(taskModeIndicator, header.nextElementSibling);
+            }
 
             // 加载教师数据
             function loadTeachers() {
@@ -465,6 +481,24 @@
                 pageButtons.appendChild(ellipsis);
             }
 
+            // 恢复复选框的勾选状态
+            function restoreCheckboxStates() {
+                if (isCreateTaskMode) {
+                    const selectedTeachers = JSON.parse(localStorage.getItem('selectedTeachers') || '[]');
+                    document.querySelectorAll('.teacher-select-checkbox').forEach(checkbox => {
+                        const courseCode = checkbox.dataset.courseCode;
+                        const teacherName = checkbox.dataset.teacherName;
+
+                        // 检查是否在已选择列表中
+                        const isSelected = selectedTeachers.some(t =>
+                            t.courseCode === courseCode && t.teacherName === teacherName
+                        );
+
+                        checkbox.checked = isSelected;
+                    });
+                }
+            }
+
             // 分页渲染教师数据
             function renderTeachersWithPagination() {
                 const startIndex = (currentPageNum - 1) * pageSize;
@@ -479,7 +513,21 @@
                 currentPageTeachers.forEach((teacher, index) => {
                     const row = document.createElement('tr');
                     const displayIndex = startIndex + index + 1; // 正确的序号显示
-                    row.innerHTML = `
+                    let checkboxHtml = '';
+                    if (isCreateTaskMode) {
+                        checkboxHtml = `
+                        <td>
+                            <input type="checkbox" class="teacher-select-checkbox" 
+                                   data-course-code="${teacher.courseCode || '-'}"
+                                   data-course-name="${teacher.courseName || '-'}"
+                                   data-teacher-name="${teacher.teacher || '-'}"
+                                   data-title="${teacher.title || '-'}"
+                                   data-department="${teacher.department || '-'}"
+                                   data-nature="${teacher.nature || '-'}">
+                        </td>`;
+                    }
+
+                    row.innerHTML = `${checkboxHtml}
                         <td>${displayIndex}</td>
                         <td>${teacher.courseCode || '-'}</td>
                         <td>${teacher.courseName || '-'}</td>
@@ -497,20 +545,479 @@
 
                 // 更新分页控件
                 renderPagination();
+
+                // 恢复复选框状态
+                restoreCheckboxStates();
+            }
+
+            // 初始化本地存储中的选中教师列表
+            if (isCreateTaskMode && !localStorage.getItem('selectedTeachers')) {
+                localStorage.setItem('selectedTeachers', JSON.stringify([]));
+            }
+
+            // 添加已选择课程的展示区域
+            function addSelectedCoursesSection() {
+                if (isCreateTaskMode) {
+                    // 在教师表格上方添加选中课程展示区域
+                    const section = document.createElement('div');
+                    section.className = 'selected-courses-section';
+                    section.innerHTML = `
+                        <div class="section-header">
+                            <h4>已选择课程 (<span id="selected-count">0</span>)</h4>
+                            <button id="toggle-selection-btn" class="btn btn-sm btn-outline-primary">收起</button>
+                        </div>
+                        <div id="selected-courses-container" class="selected-courses-container">
+                            <div id="selected-courses-list" class="selected-courses-list">
+                                <p class="no-selection">暂无已选择课程</p>
+                            </div>
+                        </div>
+                    `;
+
+                    // 添加样式
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .selected-courses-section {
+                            margin-bottom: 20px;
+                            border: 1px solid #e9ecef;
+                            border-radius: 4px;
+                            overflow: hidden;
+                        }
+                        .section-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 10px 15px;
+                            background-color: #f8f9fa;
+                            border-bottom: 1px solid #e9ecef;
+                        }
+                        .section-header h4 {
+                            margin: 0;
+                            font-size: 16px;
+                        }
+                        .selected-courses-container {
+                            max-height: 300px;
+                            overflow-y: auto;
+                            transition: max-height 0.3s ease;
+                        }
+                        .selected-courses-container.collapsed {
+                            max-height: 0;
+                            overflow: hidden;
+                        }
+                        .selected-courses-list {
+                            padding: 10px 15px;
+                        }
+                        .selected-course-item {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 8px;
+                            margin-bottom: 5px;
+                            background-color: #f8f9fa;
+                            border-radius: 4px;
+                            border-left: 3px solid #007bff;
+                        }
+                        .selected-course-info {
+                            flex: 1;
+                        }
+                        .selected-course-delete {
+                            background-color: #dc3545;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                            cursor: pointer;
+                            font-size: 12px;
+                        }
+                        .selected-course-delete:hover {
+                            background-color: #c82333;
+                        }
+                        .no-selection {
+                            text-align: center;
+                            color: #6c757d;
+                            font-style: italic;
+                        }
+                    `;
+                    document.head.appendChild(style);
+
+                    // 插入到表格上方
+                    const tableWrapper = document.querySelector('.table-responsive');
+                    if (tableWrapper) {
+                        tableWrapper.parentNode.insertBefore(section, tableWrapper);
+                    } else {
+                        // 备用方案：插入到页面顶部的content区域
+                        const mainContent = document.querySelector('.content');
+                        if (mainContent) {
+                            const firstChild = mainContent.firstChild;
+                            if (firstChild) {
+                                mainContent.insertBefore(section, firstChild);
+                            } else {
+                                mainContent.appendChild(section);
+                            }
+                        } else {
+                            console.error('无法找到合适的位置插入选中课程展示区域');
+                        }
+                    }
+
+                    // 加载初始选中的课程
+                    updateSelectedCoursesDisplay();
+
+                    // 添加折叠/展开事件监听
+                    const toggleBtn = document.getElementById('toggle-selection-btn');
+                    const container = document.getElementById('selected-courses-container');
+
+                    if (toggleBtn && container) {
+                        toggleBtn.addEventListener('click', function () {
+                            container.classList.toggle('collapsed');
+                            this.textContent = container.classList.contains('collapsed') ? '展开' : '收起';
+                        });
+                    }
+                }
+            }
+
+            // 更新已选择课程的显示
+            function updateSelectedCoursesDisplay() {
+                try {
+                    // 确保localStorage中有数据结构
+                    if (!localStorage.getItem('selectedTeachers')) {
+                        localStorage.setItem('selectedTeachers', JSON.stringify([]));
+                    }
+
+                    // 安全地解析localStorage数据
+                    let selectedTeachers = [];
+                    try {
+                        selectedTeachers = JSON.parse(localStorage.getItem('selectedTeachers') || '[]');
+                        if (!Array.isArray(selectedTeachers)) {
+                            selectedTeachers = [];
+                            localStorage.setItem('selectedTeachers', JSON.stringify([]));
+                        }
+                    } catch (e) {
+                        console.error('解析selectedTeachers数据出错:', e);
+                        selectedTeachers = [];
+                        localStorage.setItem('selectedTeachers', JSON.stringify([]));
+                    }
+
+                    // 查找DOM元素
+                    const listElement = document.getElementById('selected-courses-list');
+                    const countElement = document.getElementById('selected-count');
+                    const container = document.getElementById('selected-courses-container');
+
+                    // 如果元素不存在，重新查找和创建
+                    if (!listElement || !countElement) {
+                        console.log('重新创建选中课程展示区域');
+                        addSelectedCoursesSection();
+                        return;
+                    }
+
+                    // 确保容器不处于折叠状态
+                    if (container && container.classList.contains('collapsed') && selectedTeachers.length > 0) {
+                        container.classList.remove('collapsed');
+                        const toggleBtn = document.getElementById('toggle-selection-btn');
+                        if (toggleBtn) {
+                            toggleBtn.textContent = '收起';
+                        }
+                    }
+
+                    // 更新计数
+                    countElement.textContent = selectedTeachers.length;
+
+                    // 清空列表
+                    listElement.innerHTML = '';
+
+                    // 如果没有选中的课程
+                    if (selectedTeachers.length === 0) {
+                        listElement.innerHTML = '<p class="no-selection">暂无已选择课程</p>';
+                        return;
+                    }
+
+                    // 添加每个选中的课程
+                    selectedTeachers.forEach(teacher => {
+                        if (teacher && teacher.courseCode && teacher.teacherName) {
+                            const item = document.createElement('div');
+                            item.className = 'selected-course-item';
+                            item.dataset.courseCode = teacher.courseCode;
+                            item.dataset.teacherName = teacher.teacherName;
+                            item.innerHTML = `
+                                <div class="selected-course-info">
+                                    <strong>${teacher.courseName || '未知课程'}</strong> (${teacher.courseCode})<br>
+                                    教师: ${teacher.teacherName} | 部门: ${teacher.department || '未知'}
+                                </div>
+                                <button class="selected-course-delete" title="删除选择">删除</button>
+                            `;
+                            listElement.appendChild(item);
+                        }
+                    });
+
+                    // 添加删除事件监听（使用委托方式避免重复绑定）
+                    listElement.onclick = function (event) {
+                        if (event.target.classList.contains('selected-course-delete')) {
+                            const item = event.target.closest('.selected-course-item');
+                            const courseCode = item.dataset.courseCode;
+                            const teacherName = item.dataset.teacherName;
+
+                            // 从localStorage中移除
+                            let selectedTeachers = JSON.parse(localStorage.getItem('selectedTeachers') || '[]');
+                            selectedTeachers = selectedTeachers.filter(t =>
+                                !(t.courseCode === courseCode && t.teacherName === teacherName)
+                            );
+                            localStorage.setItem('selectedTeachers', JSON.stringify(selectedTeachers));
+
+                            // 更新显示
+                            updateSelectedCoursesDisplay();
+
+                            // 更新复选框状态
+                            document.querySelectorAll('.teacher-select-checkbox').forEach(checkbox => {
+                                if (checkbox.dataset.courseCode === courseCode &&
+                                    checkbox.dataset.teacherName === teacherName) {
+                                    checkbox.checked = false;
+                                }
+                            });
+                        }
+                    };
+                } catch (error) {
+                    console.error('更新已选择课程显示时出错:', error);
+                }
             }
 
             // 初始加载数据
             loadTeachers();
 
-            // 返回按钮事件
-            backBtn.addEventListener('click', () => {
-                window.location.href = 'courses.html';
+            // 添加已选择课程展示区域
+            addSelectedCoursesSection();
+
+            // 添加复选框点击事件处理
+            document.addEventListener('change', function (event) {
+                if (event.target.classList.contains('teacher-select-checkbox')) {
+                    const checkbox = event.target;
+                    const selectedTeachers = JSON.parse(localStorage.getItem('selectedTeachers') || '[]');
+
+                    const teacherInfo = {
+                        courseCode: checkbox.dataset.courseCode,
+                        courseName: checkbox.dataset.courseName,
+                        teacherName: checkbox.dataset.teacherName,
+                        title: checkbox.dataset.title,
+                        department: checkbox.dataset.department,
+                        nature: checkbox.dataset.nature
+                    };
+
+                    if (checkbox.checked) {
+                        // 添加到选中列表
+                        selectedTeachers.push(teacherInfo);
+                    } else {
+                        // 从选中列表中移除
+                        const index = selectedTeachers.findIndex(item =>
+                            item.courseCode === teacherInfo.courseCode &&
+                            item.teacherName === teacherInfo.teacherName
+                        );
+                        if (index > -1) {
+                            selectedTeachers.splice(index, 1);
+                        }
+                    }
+
+                    // 保存到本地存储
+                    localStorage.setItem('selectedTeachers', JSON.stringify(selectedTeachers));
+
+                    // 更新已选择课程的显示
+                    updateSelectedCoursesDisplay();
+                }
             });
 
-            // 刷新按钮事件
-            refreshBtn.addEventListener('click', () => {
-                currentPageNum = 1; // 刷新时重置到第一页
-                loadTeachers();
+            // 返回按钮事件处理（增强版）
+            function setupBackButton() {
+                // 尝试获取返回按钮的多种方式
+                const backBtn = document.getElementById('backBtn') ||
+                    document.querySelector('[id*="back"],[class*="back"]') ||
+                    document.querySelector('button:contains("返回")') ||
+                    document.querySelector('a:contains("返回")');
+
+                if (backBtn) {
+                    console.log('找到返回按钮，绑定事件');
+                    // 移除可能存在的旧事件监听器
+                    const newBackBtn = backBtn.cloneNode(true);
+                    backBtn.parentNode.replaceChild(newBackBtn, backBtn);
+
+                    // 重新绑定事件
+                    newBackBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        console.log('返回按钮点击');
+                        if (isCreateTaskMode) {
+                            console.log('跳转到: courses.html?createTask=true');
+                            window.location.href = 'courses.html?createTask=true';
+                        } else {
+                            console.log('跳转到: courses.html');
+                            window.location.href = 'courses.html';
+                        }
+                    });
+                } else {
+                    console.error('未找到返回按钮');
+                    // 添加备用方案：在页面顶部添加返回链接
+                    const backLink = document.createElement('div');
+                    backLink.className = 'back-link-container';
+                    backLink.innerHTML = `
+                        <a href="courses.html${isCreateTaskMode ? '?createTask=true' : ''}" 
+                           class="btn btn-primary back-link">
+                            返回课程列表
+                        </a>
+                    `;
+
+                    const mainContent = document.querySelector('.content') ||
+                        document.querySelector('.content-wrapper');
+                    if (mainContent) {
+                        mainContent.insertBefore(backLink, mainContent.firstChild);
+                    }
+                }
+            }
+
+            // 调用设置返回按钮的函数
+            setupBackButton();
+
+            // 刷新按钮事件处理（增强版）
+            function setupRefreshButton() {
+                // 尝试获取刷新按钮的多种方式
+                const refreshBtn = document.getElementById('refreshBtn') ||
+                    document.querySelector('[id*="refresh"],[class*="refresh"]') ||
+                    document.querySelector('button:contains("刷新")') ||
+                    document.querySelector('a:contains("刷新")');
+
+                if (refreshBtn) {
+                    console.log('找到刷新按钮，绑定事件');
+                    // 移除可能存在的旧事件监听器
+                    const newRefreshBtn = refreshBtn.cloneNode(true);
+                    refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
+
+                    // 重新绑定事件
+                    newRefreshBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        console.log('刷新按钮点击');
+                        currentPageNum = 1; // 重置到第一页
+
+                        // 显示加载中提示
+                        if (loading) {
+                            loading.style.display = 'flex';
+                        }
+
+                        // 重新加载数据
+                        if (typeof loadTeachers === 'function') {
+                            console.log('调用loadTeachers()重新加载数据');
+                            loadTeachers();
+                        } else {
+                            console.error('loadTeachers函数未定义');
+                        }
+                    });
+                } else {
+                    console.error('未找到刷新按钮');
+                    // 添加备用方案：在页面上添加刷新按钮
+                    const refreshButton = document.createElement('button');
+                    refreshButton.className = 'btn btn-secondary refresh-button';
+                    refreshButton.textContent = '刷新数据';
+
+                    refreshButton.addEventListener('click', function () {
+                        console.log('备用刷新按钮点击');
+                        currentPageNum = 1;
+                        if (typeof loadTeachers === 'function') {
+                            loadTeachers();
+                        }
+                    });
+
+                    const actionBar = document.querySelector('.btn-group') ||
+                        document.querySelector('.action-bar') ||
+                        document.querySelector('.btn-toolbar') ||
+                        document.querySelector('.action-buttons');
+
+                    if (actionBar) {
+                        actionBar.appendChild(refreshButton);
+                    } else if (document.body) {
+                        // 如果找不到合适的位置，就添加到body末尾
+                        document.body.appendChild(refreshButton);
+                    }
+                }
+            }
+
+            // 调用设置刷新按钮的函数
+            setupRefreshButton();
+
+            // 调试和功能测试辅助函数
+            function testAllFeatures() {
+                console.log('====== 功能测试开始 ======');
+
+                // 1. 测试已选择教师展示功能
+                console.log('测试1: 已选择教师展示');
+                if (typeof updateSelectedCoursesDisplay === 'function') {
+                    try {
+                        updateSelectedCoursesDisplay();
+                        console.log('✓ 已选择教师展示功能正常');
+                    } catch (error) {
+                        console.error('✗ 已选择教师展示功能错误:', error);
+                    }
+                }
+
+                // 2. 测试本地存储功能
+                console.log('测试2: 本地存储');
+                try {
+                    const testData = JSON.parse(localStorage.getItem('selectedTeachers') || '[]');
+                    console.log('✓ 本地存储读取正常，已选择教师数量:', testData.length);
+                } catch (error) {
+                    console.error('✗ 本地存储读取错误:', error);
+                }
+
+                // 3. 测试折叠/展开功能
+                console.log('测试3: 折叠/展开功能');
+                const toggleBtn = document.getElementById('toggle-selection-btn');
+                if (toggleBtn) {
+                    console.log('✓ 折叠/展开按钮存在');
+                } else {
+                    console.warn('⚠ 折叠/展开按钮未找到');
+                }
+
+                // 4. 测试返回按钮
+                console.log('测试4: 返回按钮');
+                const backBtnExists = document.getElementById('backBtn') ||
+                    document.querySelector('.back-link');
+                if (backBtnExists) {
+                    console.log('✓ 返回按钮存在');
+                } else {
+                    console.warn('⚠ 返回按钮未找到');
+                }
+
+                // 5. 测试刷新按钮
+                console.log('测试5: 刷新按钮');
+                const refreshBtnExists = document.getElementById('refreshBtn') ||
+                    document.querySelector('.refresh-button');
+                if (refreshBtnExists) {
+                    console.log('✓ 刷新按钮存在');
+                } else {
+                    console.warn('⚠ 刷新按钮未找到');
+                }
+
+                console.log('====== 功能测试结束 ======');
+
+                // 显示测试结果提示
+                setTimeout(() => {
+                    const notification = document.createElement('div');
+                    notification.className = 'alert alert-info notification-test';
+                    notification.style.position = 'fixed';
+                    notification.style.bottom = '20px';
+                    notification.style.right = '20px';
+                    notification.style.zIndex = '9999';
+                    notification.innerHTML = `
+                        <strong>功能测试已完成</strong><br>
+                        请查看控制台获取详细测试结果。
+                    `;
+
+                    document.body.appendChild(notification);
+
+                    // 5秒后自动移除通知
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 5000);
+                }, 1000);
+            }
+
+            // 页面加载完成后执行测试
+            window.addEventListener('load', function () {
+                // 延迟执行测试，确保所有DOM元素都已加载完成
+                setTimeout(testAllFeatures, 1000);
             });
 
             // 上一页按钮事件

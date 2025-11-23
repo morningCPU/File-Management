@@ -263,11 +263,30 @@
 
 <body>
     <div class="container">
+        <div id="taskCreationStatus" class="task-status" style="display: none; margin-bottom: 20px;">
+            <div id="selected-courses-section" class="mb-4">
+                <div
+                    class="selected-courses-header d-flex justify-content-between align-items-center bg-light p-3 rounded-top">
+                    <h5 class="mb-0">已选择课程 (<span id="selectedCount">0</span>)</h5>
+                    <button id="toggleSelectedCourses" class="btn btn-secondary btn-sm">收起</button>
+                </div>
+
+                <div id="selectedCoursesContainer" class="border border-top-0 rounded-bottom selected-courses-container"
+                    style="transition: max-height 0.3s ease;">
+                    <div id="selectedCoursesList" class="selected-courses-list">
+                        <p class="no-selection">暂无已选择课程</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="header">
             <h1>课程数据展示</h1>
             <div>
                 <a href="./dashboard.html" class="nav-btn" style="margin-right: 10px;">返回控制面板</a>
                 <a href="/admin/upload.html" class="nav-btn">返回上传页面</a>
+                <button id="createTaskBtn" class="nav-btn"
+                    style="margin-left: 10px; background-color: #52c41a; display: none;">创建任务</button>
             </div>
         </div>
 
@@ -277,12 +296,7 @@
                 <div class="search-box">
                     <select id="yearFilter" class="search-input" style="width: 120px; margin-right: 10px;">
                         <option value="">全部年份</option>
-                        <option value="2020">2020年</option>
-                        <option value="2021">2021年</option>
-                        <option value="2022">2022年</option>
-                        <option value="2023">2023年</option>
-                        <option value="2024">2024年</option>
-                        <option value="2025">2025年</option>
+                        <!-- 年份选项将通过JavaScript动态生成 -->
                     </select>
                     <input type="text" id="searchInput" class="search-input" placeholder="搜索课程名称" />
                     <button id="searchBtn" class="btn btn-primary">搜索</button>
@@ -318,7 +332,6 @@
                         </tr>
                     </thead>
                     <tbody id="courseTableBody">
-                        <!-- 课程数据将通过JavaScript动态加载 -->
                     </tbody>
                 </table>
 
@@ -328,7 +341,6 @@
                     <div class="pagination-controls">
                         <button id="prevPage" class="pagination-btn" disabled>&lt;</button>
                         <div id="pageButtons" style="display: flex;">
-                            <!-- 分页按钮将动态生成 -->
                         </div>
                         <button id="nextPage" class="pagination-btn" disabled>&gt;</button>
                     </div>
@@ -338,7 +350,394 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isCreateTaskMode = urlParams.get('createTask') === 'true';
+
+            if (isCreateTaskMode) {
+                document.getElementById('taskCreationStatus').style.display = 'block';
+                document.getElementById('createTaskBtn').style.display = 'inline-block';
+
+                // 添加CSS样式
+                const style = document.createElement('style');
+                style.textContent = `
+                .selected-courses-container {
+                    overflow: hidden;
+                    transition: max-height 0.3s ease;
+                    /* 默认最大高度，通过CSS控制而不是行内样式 */
+                    max-height: 300px;
+                }
+                .selected-courses-container.collapsed {
+                    max-height: 0 !important;
+                    overflow: hidden;
+                }
+                .selected-courses-list {
+                    padding: 10px 15px;
+                }
+                .selected-course-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 8px;
+                    margin-bottom: 5px;
+                    background-color: #f8f9fa;
+                    border-radius: 4px;
+                    border-left: 3px solid #007bff;
+                }
+                .selected-course-info {
+                    flex: 1;
+                }
+                .selected-course-delete {
+                    background-color: #dc3545;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                    cursor: pointer;
+                    font-size: 12px;
+                }
+                .selected-course-delete:hover {
+                    background-color: #c82333;
+                }
+                .no-selection {
+                    text-align: center;
+                    color: #6c757d;
+                    font-style: italic;
+                }
+            `;
+                document.head.appendChild(style);
+
+                // 更新已选择课程显示
+                updateSelectedCoursesDisplay();
+
+                // 设置折叠/展开按钮事件
+                const toggleBtn = document.getElementById('toggleSelectedCourses');
+                const container = document.getElementById('selectedCoursesContainer');
+
+                // 确保容器初始状态不折叠
+                container.classList.remove('collapsed');
+                toggleBtn.textContent = '收起';
+
+                // 绑定点击事件
+                toggleBtn.onclick = function () {
+                    if (container.classList.contains('collapsed')) {
+                        container.classList.remove('collapsed');
+                        this.textContent = '收起';
+                    } else {
+                        container.classList.add('collapsed');
+                        this.textContent = '展开';
+                    }
+                    console.log('折叠状态切换为:', container.classList.contains('collapsed'));
+                };
+            }
+
+            // 创建任务按钮点击事件
+            document.getElementById('createTaskBtn').addEventListener('click', function () {
+                // 后续将实现创建任务的API调用
+                alert('即将创建任务，将保存您选择的教师信息');
+            });
+        });
+
+        // 状态管理工具函数
+        const courseSelectionState = {
+            // 获取已选择的课程数据
+            getSelectedCourses: function () {
+                try {
+                    const data = localStorage.getItem('selectedTeachers');
+                    const courses = data ? JSON.parse(data) : [];
+                    const result = Array.isArray(courses) ? courses : [];
+                    // console.log('从localStorage获取的课程数据:', result); // 减少日志噪音
+                    return result;
+                } catch (error) {
+                    console.error('获取已选择课程失败:', error);
+                    return [];
+                }
+            },
+
+            // 保存课程数据到本地存储
+            saveSelectedCourses: function (courses) {
+                try {
+                    if (!Array.isArray(courses)) {
+                        console.error('保存数据格式错误，必须是数组');
+                        return false;
+                    }
+                    localStorage.setItem('selectedTeachers', JSON.stringify(courses));
+                    return true;
+                } catch (error) {
+                    console.error('保存已选择课程失败:', error);
+                    return false;
+                }
+            },
+
+            // 清空已选择的课程
+            clearSelectedCourses: function () {
+                try {
+                    localStorage.removeItem('selectedTeachers');
+                    return true;
+                } catch (error) {
+                    console.error('清空已选择课程失败:', error);
+                    return false;
+                }
+            },
+
+            // 验证课程数据的有效性
+            validateCourseData: function (course) {
+                return course && typeof course === 'object';
+            }
+        };
+
+        // 更新已选择课程的显示
+        function updateSelectedCoursesDisplay() {
+            try {
+                // 使用状态管理函数获取数据
+                const selectedCourses = courseSelectionState.getSelectedCourses();
+
+                // 获取DOM元素
+                const coursesList = document.getElementById('selectedCoursesList');
+                const countElement = document.getElementById('selectedCount');
+                const container = document.getElementById('selectedCoursesContainer');
+
+                // 【修改说明】注释掉这段强制展开的代码。
+                // 否则用户点击“收起”后，如果触发了数据更新（例如storage事件），列表又会自动弹开，体验不好。
+                //
+                // if (container && container.classList.contains('collapsed') && selectedCourses.length > 0) {
+                //     container.classList.remove('collapsed');
+                //     const toggleBtn = document.getElementById('toggleSelectedCourses');
+                //     if (toggleBtn) {
+                //         toggleBtn.textContent = '收起';
+                //     }
+                // }
+
+                // 更新计数
+                countElement.textContent = selectedCourses.length;
+
+                // 清空列表
+                coursesList.innerHTML = '';
+
+                // 如果没有选中的课程
+                if (selectedCourses.length === 0) {
+                    coursesList.innerHTML = '<p class="no-selection">暂无已选择课程</p>';
+                    return;
+                }
+
+                // 添加每个选中的课程
+                selectedCourses.forEach((course, index) => {
+                    if (course && typeof course === 'object') {
+                        const displayName = course.courseName || course.teacherName || `课程 ${index + 1}`;
+                        const displayCode = course.courseCode || `#${index + 1}`;
+
+                        const item = document.createElement('div');
+                        item.className = 'selected-course-item';
+                        item.dataset.courseCode = course.courseCode || `temp-${index}`;
+                        item.innerHTML = `
+                        <div class="selected-course-info">
+                            <strong>${displayName}</strong> (${displayCode})<br>
+                            ${course.teacherName ? `教师: ${course.teacherName}` : ''}
+                            ${course.teacherName && course.semester ? ' | ' : ''}
+                            ${course.semester ? `学期: ${course.semester}` : ''}
+                        </div>
+                        <button class="selected-course-delete" title="删除选择">删除</button>
+                    `;
+                        coursesList.appendChild(item);
+                    }
+                });
+
+                // 添加删除事件监听（使用委托方式避免重复绑定）
+                coursesList.onclick = function (event) {
+                    if (event.target.classList.contains('selected-course-delete')) {
+                        const item = event.target.closest('.selected-course-item');
+                        const courseCode = item.dataset.courseCode;
+
+                        // 从localStorage中移除
+                        let selectedCourses = JSON.parse(localStorage.getItem('selectedTeachers') || '[]');
+                        selectedCourses = selectedCourses.filter(c => c.courseCode !== courseCode);
+                        localStorage.setItem('selectedTeachers', JSON.stringify(selectedCourses));
+
+                        // 更新显示
+                        updateSelectedCoursesDisplay();
+
+                        // 更新行高亮状态
+                        const courseRow = document.querySelector(`tr[data-course-code="${courseCode}"]`);
+                        if (courseRow) {
+                            courseRow.classList.remove('selected');
+                        }
+                    }
+                };
+
+            } catch (error) {
+                console.error('更新已选择课程显示时出错:', error);
+                document.getElementById('selectedCoursesList').innerHTML =
+                    '<p class="no-selection">加载失败，请刷新页面重试</p>';
+            }
+        }
+
+        // 监听localStorage变化，实时更新显示
+        window.addEventListener('storage', function (e) {
+            if (e.key === 'selectedTeachers') {
+                if (window._storageUpdateTimer) {
+                    clearTimeout(window._storageUpdateTimer);
+                }
+                window._storageUpdateTimer = setTimeout(() => {
+                    updateSelectedCoursesDisplay();
+                }, 100);
+            }
+        });
+
+        window.addEventListener('beforeunload', function () {
+            if (window._storageUpdateTimer) {
+                clearTimeout(window._storageUpdateTimer);
+            }
+        });
+
+        // 增强创建任务按钮功能 - 实现创建任务功能和数据提交到数据库
+        const createTaskBtn = document.getElementById('createTaskBtn');
+        if (createTaskBtn) {
+            createTaskBtn.addEventListener('click', function () {
+                const selectedCourses = courseSelectionState.getSelectedCourses();
+
+                if (selectedCourses.length === 0) {
+                    alert('请至少选择一门课程后再创建任务');
+                    return;
+                }
+
+                // 显示确认对话框
+                const courseNames = selectedCourses
+                    .filter(course => courseSelectionState.validateCourseData(course))
+                    .map(course => course.courseName || '未命名课程')
+                    .join(', ');
+
+                if (!confirm(`确认创建任务吗？已选择 ${selectedCourses.length} 门课程:\n${courseNames}`)) {
+                    return;
+                }
+
+                // 准备任务数据（与后端接口匹配）
+                const today = new Date();
+                // 设置截止日期为7天后
+                const deadlineDate = new Date(today);
+                deadlineDate.setDate(today.getDate() + 7);
+                const deadline = deadlineDate.toISOString().split('T')[0]; // 格式化为yyyy-MM-dd
+
+                const taskData = {
+                    taskName: `教学任务_${new Date().toLocaleDateString()}`,
+                    deadline: deadline,  // 后端必需字段：截止日期
+                    description: `自动创建的教学任务，包含${selectedCourses.length}门课程`,  // 后端必需字段：任务描述
+                    teachers: selectedCourses  // 后端必需字段：教师/课程数据（后端期望字段名为teachers）
+                };
+
+                console.log('准备提交的任务数据:', taskData);
+
+                // 显示加载状态
+                this.disabled = true;
+                this.textContent = '正在创建任务...';
+
+                // 提交任务数据到数据库
+                fetch('/api/tasks/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('网络响应错误');
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        if (result.success) {
+                            // 清空本地存储
+                            courseSelectionState.clearSelectedCourses();
+
+                            alert('任务创建成功！');
+                            // 跳转到控制面板
+                            window.location.href = '/admin/dashboard.html';
+                        } else {
+                            throw new Error(result.message || '创建任务失败');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('创建任务失败:', error);
+                        alert(`创建任务失败: ${error.message}`);
+                    })
+                    .finally(() => {
+                        // 恢复按钮状态
+                        this.disabled = false;
+                        this.textContent = '创建任务';
+                    });
+            });
+        } else {
+            console.warn('创建任务按钮不存在，跳过事件绑定');
+        }
+    </script>
+
+    <script>
+        // 生成最近4年的年份选项函数
+        function generateYearOptions(testDate = null) {
+            const now = testDate || new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1; // getMonth()返回0-11
+
+            const yearFilter = document.getElementById('yearFilter');
+            if (!yearFilter) return;
+
+            // 清空现有选项（保留"全部年份"）
+            while (yearFilter.options.length > 1) {
+                yearFilter.remove(1);
+            }
+
+            // 根据月份确定基准年份
+            // 如果是9-12月或1-2月，以当前年份为基准
+            // 如果是3-8月，以上一年为基准
+            let baseYear;
+            if ((currentMonth >= 9 && currentMonth <= 12) || (currentMonth >= 1 && currentMonth <= 2)) {
+                baseYear = currentYear;
+            } else {
+                baseYear = currentYear - 1;
+            }
+
+            // 添加最近4年的选项，从基准年份开始往下减
+            for (let i = 0; i < 4; i++) {
+                const year = baseYear - i;
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = `${year}年`;
+                yearFilter.appendChild(option);
+            }
+
+            // 调试信息
+            console.log(`当前日期: ${currentYear}-${currentMonth}`);
+            console.log(`基准年份: ${baseYear}`);
+            console.log(`生成的年份选项: ${Array.from(yearFilter.options).slice(1).map(o => o.value).join(', ')}`);
+        }
+
+        // 测试函数 - 用于验证不同月份的情况
+        function testYearOptions() {
+            console.log('=== 年份筛选功能测试 ===');
+
+            // 测试9月（应该显示当前年及前3年）
+            const currentYear = new Date().getFullYear();
+            console.log(`\n测试场景1: ${currentYear}-09`);
+            generateYearOptions(new Date(currentYear, 8, 1)); // 9月
+
+            // 测试2月（应该显示当前年及前3年）
+            console.log(`\n测试场景2: ${currentYear}-02`);
+            generateYearOptions(new Date(currentYear, 1, 1)); // 2月
+
+            // 测试6月（应该显示前一年及更前3年）
+            console.log(`\n测试场景3: ${currentYear}-06`);
+            generateYearOptions(new Date(currentYear, 5, 1)); // 6月
+
+            // 恢复为实际当前日期
+            console.log('\n恢复为实际当前日期');
+            generateYearOptions();
+            console.log('=== 测试完成 ===');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // 生成年份选项
+            generateYearOptions();
+
             const loading = document.getElementById('loading');
             const emptyState = document.getElementById('emptyState');
             const tableContainer = document.getElementById('tableContainer');
@@ -532,7 +931,13 @@
                         const courseName = extractChineseFromCourseName(course.courseName || '');
 
                         // 构建URL并跳转
-                        const teachersUrl = `/admin/teachers.html?semester=${encodeURIComponent(semester)}&courseName=${encodeURIComponent(courseName)}`;
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const isCreateTaskMode = urlParams.get('createTask') === 'true';
+
+                        let teachersUrl = `/admin/teachers.html?semester=${encodeURIComponent(semester)}&courseName=${encodeURIComponent(courseName)}`;
+                        if (isCreateTaskMode) {
+                            teachersUrl += '&createTask=true';
+                        }
                         window.location.href = teachersUrl;
                     });
 
@@ -588,12 +993,8 @@
 
                 renderCoursesWithPagination();
             }
-
-
         });
     </script>
-
-
 </body>
 
 </html>

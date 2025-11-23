@@ -81,6 +81,165 @@
             gap: 20px;
         }
 
+        .tasks-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tasks-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tasks-refresh {
+            background-color: #f0f2f5;
+            border: none;
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .tasks-refresh:hover {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .tasks-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tasks-table th,
+        .tasks-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .tasks-table th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tasks-table tr:hover {
+            background-color: #fafafa;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.in-progress {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .status-badge.completed {
+            background-color: #f6ffed;
+            color: #52c41a;
+        }
+
+        .status-badge.pending {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .status-badge.closed {
+            background-color: #f5f5f5;
+            color: #999;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .task-action-view {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .task-action-view:hover {
+            background-color: #40a9ff;
+        }
+
+        .task-action-edit {
+            background-color: #faad14;
+            color: white;
+        }
+
+        .task-action-edit:hover {
+            background-color: #ffc53d;
+        }
+
+        .task-action-delete {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        .task-action-delete:hover {
+            background-color: #ff7875;
+        }
+
+        .no-tasks {
+            text-align: center;
+            padding: 40px 0;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .task-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1890ff;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
         .function-card {
             background-color: white;
             border-radius: 8px;
@@ -185,8 +344,345 @@
                 <p class="function-description">管理和查看所有课程信息</p>
                 <button class="function-button" onclick="window.location.href='/admin/courses.html'">查看课程</button>
             </div>
+
+            <div class="function-card">
+                <div class="function-icon">✅</div>
+                <h2 class="function-title">创建任务</h2>
+                <p class="function-description">为教师分配评价任务</p>
+                <button class="function-button"
+                    onclick="window.location.href='/admin/courses.html?createTask=true'">创建任务</button>
+            </div>
         </div>
+
+        <section class="tasks-section" id="tasksSection">
+            <div class="tasks-header">
+                <h2 class="tasks-title">任务列表</h2>
+                <div class="task-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="totalTasks">0</span>
+                        <span class="stat-label">总任务</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="inProgressTasks">0</span>
+                        <span class="stat-label">进行中</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="completedTasks">0</span>
+                        <span class="stat-label">已完成</span>
+                    </div>
+                </div>
+                <button class="tasks-refresh" onclick="loadTasks()">刷新</button>
+            </div>
+            <div id="tasksContent">
+                <div class="no-tasks">暂无任务数据</div>
+            </div>
+        </section>
     </div>
+
+    <script>
+        // 添加测试功能
+        function testDashboardFunctionality() {
+            console.log('====== 控制面板功能测试开始 ======');
+
+            // 1. 测试网络连接
+            testNetworkConnection();
+
+            // 2. 测试数据加载功能
+            testTaskLoading();
+
+            // 3. 测试任务操作功能
+            testTaskOperations();
+
+            // 4. 监控页面性能
+            monitorPerformance();
+
+            console.log('====== 控制面板功能测试完成 ======');
+        }
+
+        // 测试网络连接
+        function testNetworkConnection() {
+            console.log('测试网络连接...');
+
+            // 快速检查API连接
+            fetch('/api/tasks/all', {
+                method: 'HEAD',
+                cache: 'no-cache'
+            })
+                .then(response => {
+                    console.log('API连接正常');
+                })
+                .catch(error => {
+                    console.warn('API连接测试失败，可能处于离线模式或服务器未启动:', error.message);
+                    // 不阻止页面继续加载
+                });
+        }
+
+        // 测试任务加载功能
+        function testTaskLoading() {
+            console.log('测试任务加载功能...');
+
+            // 模拟加载任务以测试功能
+            const testTasks = [
+                {
+                    id: 'test-1',
+                    taskName: '测试任务1',
+                    createTime: new Date().toISOString(),
+                    status: 'created',
+                    courses: [{ courseName: '测试课程A' }, { courseName: '测试课程B' }]
+                },
+                {
+                    id: 'test-2',
+                    taskName: '测试任务2',
+                    createTime: new Date(Date.now() - 86400000).toISOString(), // 昨天
+                    status: 'completed',
+                    courses: []
+                }
+            ];
+        }
+
+        // 测试任务操作功能
+        function testTaskOperations() {
+            console.log('测试任务操作功能...');
+
+            // 验证函数存在性
+            console.assert(typeof viewTask === 'function', 'viewTask函数未定义');
+            console.assert(typeof editTask === 'function', 'editTask函数未定义');
+            console.assert(typeof deleteTask === 'function', 'deleteTask函数未定义');
+            console.assert(typeof loadTasks === 'function', 'loadTasks函数未定义');
+
+            console.log('所有必要函数已定义');
+        }
+
+        // 监控页面性能
+        function monitorPerformance() {
+            console.log('监控页面性能...');
+
+            if (window.performance && performance.mark) {
+                performance.mark('dashboard-loaded');
+                performance.measure('dashboard-render-time', 'navigation-start', 'dashboard-loaded');
+
+                const measures = performance.getEntriesByName('dashboard-render-time');
+                if (measures.length > 0) {
+                    console.log(`页面渲染时间: ${measures[0].duration.toFixed(2)}ms`);
+                }
+            }
+        }
+
+        // 加载任务列表
+        function loadTasks() {
+            const tasksContent = document.getElementById('tasksContent');
+            const totalTasks = document.getElementById('totalTasks');
+            const inProgressTasks = document.getElementById('inProgressTasks');
+            const completedTasks = document.getElementById('completedTasks');
+
+            // 显示加载状态
+            tasksContent.innerHTML = '<div class="no-tasks">加载中...</div>';
+
+            // 调用API获取任务数据
+            fetch('/api/tasks/all')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('获取任务数据失败');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 确保数据是数组格式
+                    const tasks = Array.isArray(data) ? data : (data.data || []);
+
+                    if (tasks.length === 0) {
+                        tasksContent.innerHTML = '<div class="no-tasks">暂无任务数据</div>';
+                        totalTasks.textContent = '0';
+                        inProgressTasks.textContent = '0';
+                        completedTasks.textContent = '0';
+                        return;
+                    }
+
+                    // 更新统计数据
+                    totalTasks.textContent = tasks.length;
+
+                    // 调整状态匹配逻辑，支持英文和中文状态
+                    const getStatusForCount = (task) => {
+                        const status = task.status || '';
+                        return status.toLowerCase() === 'in_progress' || status === '进行中' || status === 'created';
+                    };
+
+                    const getCompletedStatusForCount = (task) => {
+                        const status = task.status || '';
+                        return status.toLowerCase() === 'completed' || status === '已完成';
+                    };
+
+                    const inProgress = tasks.filter(task => getStatusForCount(task)).length;
+                    const completed = tasks.filter(task => getCompletedStatusForCount(task)).length;
+
+                    inProgressTasks.textContent = inProgress;
+                    completedTasks.textContent = completed;
+
+                    // 生成任务表格
+                    const table = document.createElement('table');
+                    table.className = 'tasks-table';
+
+                    // 创建表头
+                    const thead = document.createElement('thead');
+                    thead.innerHTML = `
+                        <tr>
+                            <th>任务名称</th>
+                            <th>创建时间</th>
+                            <th>截止时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    `;
+                    table.appendChild(thead);
+
+                    // 创建表体
+                    const tbody = document.createElement('tbody');
+
+                    tasks.forEach(task => {
+                        const row = document.createElement('tr');
+
+                        // 格式化日期
+                        const formatDate = (dateString) => {
+                            if (!dateString) return '-';
+                            try {
+                                const date = new Date(dateString);
+                                return date.toLocaleString('zh-CN', {
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                            } catch (e) {
+                                return dateString;
+                            }
+                        };
+
+                        // 获取状态样式类和显示文本
+                        let statusClass = '';
+                        let statusText = task.status || '未开始';
+
+                        // 转换英文状态为中文显示
+                        switch (statusText.toLowerCase()) {
+                            case 'created':
+                            case 'in_progress':
+                                statusClass = 'in-progress';
+                                statusText = '进行中';
+                                break;
+                            case 'completed':
+                                statusClass = 'completed';
+                                statusText = '已完成';
+                                break;
+                            case 'pending':
+                                statusClass = 'pending';
+                                statusText = '未开始';
+                                break;
+                            case 'closed':
+                                statusClass = 'closed';
+                                statusText = '已关闭';
+                                break;
+                            default:
+                                statusClass = 'pending';
+                                if (statusText !== '未开始' && statusText !== '进行中' &&
+                                    statusText !== '已完成' && statusText !== '已关闭') {
+                                    statusText = '未开始';
+                                }
+                        }
+
+                        // 确保任务ID存在
+                        const taskId = task.id || task.taskId || Math.random().toString(36).substr(2, 9);
+
+                        row.innerHTML = `
+                            <td>${task.taskName || '未命名任务'}</td>
+                            <td>${formatDate(task.createTime)}</td>
+                            <td>${formatDate(task.endTime)}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                <div class="task-actions">
+                                    <button class="task-action-btn task-action-view" onclick="viewTask('${taskId}')">查看</button>
+                                    <button class="task-action-btn task-action-edit" onclick="editTask('${taskId}')">编辑</button>
+                                    <button class="task-action-btn task-action-delete" onclick="deleteTask('${taskId}')">删除</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+
+                    table.appendChild(tbody);
+                    tasksContent.innerHTML = '';
+                    tasksContent.appendChild(table);
+                })
+                .catch(error => {
+                    console.error('加载任务失败:', error);
+                    tasksContent.innerHTML = '<div class="no-tasks">加载任务失败，请稍后重试</div>';
+                    // 重置统计数据
+                    totalTasks.textContent = '0';
+                    inProgressTasks.textContent = '0';
+                    completedTasks.textContent = '0';
+                });
+        }
+
+        // 查看任务详情
+        function viewTask(taskId) {
+            // 跳转到任务详情页面
+            window.location.href = `task-detail.html?taskId=${taskId}`;
+        }
+
+        // 编辑任务
+        function editTask(taskId) {
+            alert('编辑任务功能即将开放，当前任务ID: ' + taskId);
+        }
+
+        // 删除任务
+        function deleteTask(taskId) {
+            if (confirm('确定要删除这个任务吗？此操作不可撤销。')) {
+                // 显示加载状态
+                const tasksContent = document.getElementById('tasksContent');
+                const originalContent = tasksContent.innerHTML;
+                tasksContent.innerHTML = '<div class="no-tasks">处理中...</div>';
+
+                fetch(`/api/tasks/${taskId}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('删除请求失败');
+                        }
+                        return response.json().catch(() => ({
+                            success: true // 如果返回非JSON响应，假设成功
+                        }));
+                    })
+                    .then(data => {
+                        if (data.success !== false) { // 兼容不同的响应格式
+                            alert('任务删除成功');
+                            loadTasks(); // 重新加载任务列表
+                        } else {
+                            alert('删除失败: ' + (data.message || '未知错误'));
+                            tasksContent.innerHTML = originalContent;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('删除任务失败:', error);
+                        alert('删除任务失败，请稍后重试');
+                        tasksContent.innerHTML = originalContent;
+                    });
+            }
+        }
+
+        // 页面加载时加载任务数据
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('控制面板页面加载完成');
+
+            // 加载任务数据
+            loadTasks();
+
+            // 添加自动刷新功能（每30秒）
+            setInterval(() => {
+                console.log('自动刷新任务列表');
+                loadTasks();
+            }, 30000);
+        });
+    </script>
 </body>
 
 </html>

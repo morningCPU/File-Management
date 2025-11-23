@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务详情 - 教师评价系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .task-info {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            display: flex;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .info-label {
+            width: 120px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            flex: 1;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.in_progress {
+            background-color: #ffecb3;
+            color: #f57c00;
+        }
+
+        .status-badge.completed {
+            background-color: #c8e6c9;
+            color: #388e3c;
+        }
+
+        .status-badge.created {
+            background-color: #e1f5fe;
+            color: #0288d1;
+        }
+
+        .teacher-list-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaeaea;
+        }
+
+        .section-header h2 {
+            color: #2c3e50;
+            font-size: 18px;
+        }
+
+        .teacher-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .evaluation-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .evaluation-status.pending {
+            background-color: #ffecb3;
+            color: #f57c00;
+        }
+
+        .evaluation-status.completed {
+            background-color: #c8e6c9;
+            color: #388e3c;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .info-item {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .data-table {
+                font-size: 14px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>任务详情</h1>
+            <button class="back-btn" onclick="window.history.back()">返回</button>
+        </div>
+
+        <!-- 任务基本信息 -->
+        <div class="task-info">
+            <div class="info-item">
+                <div class="info-label">任务名称：</div>
+                <div class="info-value" id="taskName">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">创建时间：</div>
+                <div class="info-value" id="createTime">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">创建者：</div>
+                <div class="info-value" id="creator">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">任务状态：</div>
+                <div class="info-value" id="taskStatus">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">任务描述：</div>
+                <div class="info-value" id="description">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 教师列表 -->
+        <div class="teacher-list-section">
+            <div class="section-header">
+                <h2>关联教师列表</h2>
+                <span class="teacher-count" id="teacherCount">共 0 名教师</span>
+            </div>
+
+            <div id="loadingIndicator" class="loading">加载中，请稍候...</div>
+
+            <table class="data-table" id="teacherTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>课程代码</th>
+                        <th>课程名称</th>
+                        <th>教师姓名</th>
+                        <th>职称</th>
+                        <th>部门</th>
+                        <th>课程性质</th>
+                        <th>评价状态</th>
+                        <th>评价时间</th>
+                    </tr>
+                </thead>
+                <tbody id="teacherTableBody">
+                </tbody>
+            </table>
+
+            <div id="errorMessage" class="error" style="display: none;">
+                加载失败，请刷新页面重试
+            </div>
+
+            <div id="noDataMessage" class="no-data" style="display: none;">
+                暂无关联教师数据
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 从URL获取任务ID
+        function getTaskIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('taskId');
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '-';
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // 获取任务详情
+        function loadTaskDetails() {
+            const taskId = getTaskIdFromUrl();
+            const taskInfoError = document.createElement('div');
+            taskInfoError.className = 'error';
+            taskInfoError.textContent = '任务信息加载失败';
+
+            if (!taskId) {
+                const taskInfoElement = document.querySelector('.task-info');
+                if (taskInfoElement) {
+                    taskInfoElement.innerHTML = '';
+                    taskInfoElement.appendChild(taskInfoError);
+                }
+                document.getElementById('loadingIndicator').style.display = 'none';
+                return;
+            }
+
+            // 加载任务基本信息
+            fetch(`/api/tasks/${taskId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应错误');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.task) {
+                        const task = data.task;
+                        document.getElementById('taskName').textContent = task.taskName || '-';
+                        document.getElementById('createTime').textContent = formatDate(task.createTime);
+                        document.getElementById('creator').textContent = task.creator || '-';
+
+                        // 显示任务状态
+                        const statusText = task.status || '未知';
+                        let statusClass = 'created';
+                        if (statusText === '进行中') statusClass = 'in_progress';
+                        else if (statusText === '已完成') statusClass = 'completed';
+
+                        document.getElementById('taskStatus').innerHTML =
+                            `<span class="status-badge ${statusClass}">${statusText}</span>`;
+
+                        document.getElementById('description').textContent = task.description || '-';
+                    } else {
+                        const taskInfoElement = document.querySelector('.task-info');
+                        if (taskInfoElement) {
+                            taskInfoElement.innerHTML = '';
+                            taskInfoElement.appendChild(taskInfoError);
+                        }
+                        console.error('任务数据不完整或请求失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('加载任务详情失败:', error);
+                    const taskInfoElement = document.querySelector('.task-info');
+                    if (taskInfoElement) {
+                        taskInfoElement.innerHTML = '';
+                        taskInfoElement.appendChild(taskInfoError);
+                    }
+                });
+        }
+
+        // 加载教师列表
+        function loadTaskTeachers() {
+            const taskId = getTaskIdFromUrl();
+            if (!taskId) return;
+
+            fetch(`/api/tasks/${taskId}/teachers`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应错误');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const loadingIndicator = document.getElementById('loadingIndicator');
+                    const teacherTable = document.getElementById('teacherTable');
+                    const errorMessage = document.getElementById('errorMessage');
+                    const noDataMessage = document.getElementById('noDataMessage');
+                    const teacherTableBody = document.getElementById('teacherTableBody');
+                    const teacherCount = document.getElementById('teacherCount');
+
+                    // 隐藏加载状态
+                    loadingIndicator.style.display = 'none';
+
+                    if (data && data.success && Array.isArray(data.teachers)) {
+                        const teachers = data.teachers;
+
+                        // 更新教师数量
+                        teacherCount.textContent = `共 ${teachers.length} 名教师`;
+
+                        if (teachers.length > 0) {
+                            // 显示表格
+                            teacherTable.style.display = 'table';
+
+                            // 清空表格内容
+                            teacherTableBody.innerHTML = '';
+
+                            // 填充表格数据
+                            teachers.forEach((teacher, index) => {
+                                const row = document.createElement('tr');
+
+                                // 评价状态样式
+                                let evaluationStatusClass = 'pending';
+                                let evaluationStatusText = teacher.evaluationStatus || '待评价';
+                                if (evaluationStatusText === '已评价') {
+                                    evaluationStatusClass = 'completed';
+                                }
+
+                                row.innerHTML = `
+                                    <td>${index + 1}</td>
+                                    <td>${teacher.courseCode || '-'}</td>
+                                    <td>${teacher.courseName || '-'}</td>
+                                    <td>${teacher.teacherName || '-'}</td>
+                                    <td>${teacher.title || '-'}</td>
+                                    <td>${teacher.department || '-'}</td>
+                                    <td>${teacher.nature || '-'}</td>
+                                    <td>
+                                        <span class="evaluation-status ${evaluationStatusClass}">
+                                            ${evaluationStatusText}
+                                        </span>
+                                    </td>
+                                    <td>${formatDate(teacher.evaluationTime)}</td>
+                                `;
+
+                                teacherTableBody.appendChild(row);
+                            });
+                        } else {
+                            // 显示无数据提示
+                            noDataMessage.style.display = 'block';
+                        }
+                    } else {
+                        // 显示错误信息
+                        errorMessage.style.display = 'block';
+                        console.error('返回数据格式错误:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('加载教师列表失败:', error);
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    document.getElementById('errorMessage').style.display = 'block';
+                });
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('任务详情页面加载完成，任务ID:', getTaskIdFromUrl());
+
+            // 加载任务详情
+            loadTaskDetails();
+
+            // 加载教师列表
+            loadTaskTeachers();
+        });
+
+        // 添加错误处理增强
+        window.addEventListener('error', function (e) {
+            console.error('页面错误:', e.error);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.morning.v2.mapper.TaskTeacherMapper">
+    <!-- 插入单个任务教师关联 -->
+    <!-- int insertTaskTeacher(@Param("taskTeacher") TaskTeacher taskTeacher); -->
+    <insert id="insertTaskTeacher" useGeneratedKeys="true" keyProperty="id">
+        insert into
+            task_teacher
+        values
+            (DEFAULT, #{taskTeacher.taskId}, #{taskTeacher.courseCode}, #{taskTeacher.courseName}, 
+             #{taskTeacher.teacherName}, #{taskTeacher.title}, #{taskTeacher.department}, #{taskTeacher.courseNature}, 
+             #{taskTeacher.evaluationStatus}, #{taskTeacher.evaluationTime})
+    </insert>
+    
+    <!-- 批量插入任务教师关联 -->
+    <!-- int insertTaskTeachersBatch(@Param("taskTeachers") List<TaskTeacher> taskTeachers); -->
+    <insert id="insertTaskTeachersBatch">
+        insert into
+            task_teacher
+        values
+            <foreach collection="taskTeachers" item="tt" separator=",">
+                (DEFAULT, #{tt.taskId}, #{tt.courseCode}, #{tt.courseName}, 
+                 #{tt.teacherName}, #{tt.title}, #{tt.department}, #{tt.nature},
+                 #{tt.evaluationStatus}, DEFAULT)
+            </foreach>
+    </insert>
+    
+    <!-- 根据任务ID查询关联教师 -->
+    <!-- List<TaskTeacher> selectByTaskId(@Param("taskId") Long taskId); -->
+    <select id="selectByTaskId" resultType="com.morning.v2.pojo.TaskTeacher">
+        select
+            id, task_id as taskId, course_code as courseCode, course_name as courseName,
+            teacher_name as teacherName, title, department, nature,
+            evaluation_status as evaluationStatus, create_time as createTime
+        from
+            task_teacher
+        where
+            task_id = #{taskId}
+    </select>
+    
+    <!-- 根据教师姓名查询关联任务 -->
+    <!-- List<TaskTeacher> selectByTeacherName(@Param("teacherName") String teacherName); -->
+    <select id="selectByTeacherName" resultType="com.morning.v2.pojo.TaskTeacher">
+        select
+            id, task_id as taskId, course_code as courseCode, course_name as courseName,
+            teacher_name as teacherName, title, department, course_nature as courseNature,
+            evaluation_status as evaluationStatus, evaluation_time as evaluationTime
+        from
+            task_teacher
+        where
+            teacher_name like concat('%', #{teacherName}, '%')
+    </select>
+    
+    <!-- 更新评价状态 -->
+    <!-- int updateEvaluationStatus(@Param("id") Long id, @Param("status") String status); -->
+    <update id="updateEvaluationStatus">
+        update
+            task_teacher
+        set
+            evaluation_status = #{status},
+            evaluation_time = now()
+        where
+            id = #{id}
+    </update>
+    
+    <!-- 根据任务ID删除关联 -->
+    <!-- int deleteByTaskId(@Param("taskId") Long taskId); -->
+    <delete id="deleteByTaskId">
+        delete from
+            task_teacher
+        where
+            task_id = #{taskId}
+    </delete>
+    
+    <!-- 统计任务下特定状态的教师数量 -->
+    <!-- int countByTaskId(@Param("taskId") Long taskId, @Param("status") String status); -->
+    <select id="countByTaskId" resultType="int">
+        select
+            count(*)
+        from
+            task_teacher
+        where
+            task_id = #{taskId}
+            <if test="status != null">
+                and evaluation_status = #{status}
+            </if>
+    </select>
+</mapper>
