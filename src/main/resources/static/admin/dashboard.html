@@ -335,6 +335,9 @@
                 <div class="function-icon">📤</div>
                 <h2 class="function-title">上传文件</h2>
                 <p class="function-description">上传新的课程文件或教学资料</p>
+                <div id="uploadYearWarning"
+                    style="display:none; color:#d46b08; font-size:12px; margin:10px 0; padding:8px; background-color:#fff7e6; border-radius:4px;">
+                </div>
                 <button class="function-button" onclick="window.location.href='upload.html'">前往上传</button>
             </div>
 
@@ -681,6 +684,101 @@
                 console.log('自动刷新任务列表');
                 loadTasks();
             }, 30000);
+        });
+    </script>
+
+    <script>
+        // 根据当前时间自动推断所需年份范围的函数
+        function generateRequiredYears(testDate = new Date()) {
+            const currentYear = testDate.getFullYear();
+            const currentMonth = testDate.getMonth() + 1; // JavaScript月份从0开始
+            const requiredYears = [];
+
+            // 根据月份决定基准年份
+            let baseYear;
+            if (currentMonth >= 9 || currentMonth <= 2) {
+                // 9-12月及次年1-2月：使用当前年份
+                baseYear = currentYear;
+            } else {
+                // 3-8月：使用前一年
+                baseYear = currentYear - 1;
+            }
+
+            // 添加最近4年的年份（包含基准年）
+            for (let i = 0; i < 4; i++) {
+                requiredYears.push(baseYear - i);
+            }
+
+            return requiredYears;
+        }
+
+        // 检查数据库中是否有足够的年份数据
+        async function checkDatabaseYears() {
+            try {
+                // 获取所需的年份范围
+                const requiredYears = generateRequiredYears();
+                console.log('当前所需年份范围:', requiredYears);
+
+                // 从后端获取已有的课程年份数据
+                const response = await fetch('/api/courses/years');
+
+                if (!response.ok) {
+                    console.error('获取课程年份数据失败:', response.statusText);
+                    return { requiredYears, missingYears: requiredYears, hasMissingYears: true };
+                }
+
+                const data = await response.json();
+                const existingYears = data || [];
+                console.log('数据库中已有的年份:', existingYears);
+
+                // 找出缺失的年份
+                const missingYears = requiredYears.filter(year => !existingYears.includes(year.toString()));
+
+                return {
+                    requiredYears,
+                    existingYears,
+                    missingYears,
+                    hasMissingYears: missingYears.length > 0
+                };
+            } catch (error) {
+                console.error('检查年份数据时发生错误:', error);
+                // 出错时假设所有年份都缺失，确保用户能得到提醒
+                const requiredYears = generateRequiredYears();
+                return { requiredYears, missingYears: requiredYears, hasMissingYears: true };
+            }
+        }
+
+        // 检查数据库年份数据是否充足并在控制面板显示提示
+        async function checkAndShowYearWarningInDashboard() {
+            const result = await checkDatabaseYears();
+            const warningElement = document.getElementById('uploadYearWarning');
+
+            if (result.hasMissingYears && warningElement) {
+                // 构建提示信息
+                const currentYear = new Date().getFullYear();
+                const currentMonth = new Date().getMonth() + 1;
+                let periodText = '';
+
+                if (currentMonth >= 9 || currentMonth <= 2) {
+                    periodText = `${currentYear}年9-12月和${currentYear + 1}年1-2月`;
+                } else {
+                    periodText = `${currentYear}年3-8月`;
+                }
+
+                const warningMessage = `缺少数据：需要${periodText}的培养方案文件，缺失年份：${result.missingYears.join('年、')}年`;
+
+                // 显示警告提示
+                warningElement.textContent = warningMessage;
+                warningElement.style.display = 'block';
+            } else if (warningElement) {
+                // 如果没有缺失，隐藏警告
+                warningElement.style.display = 'none';
+            }
+        }
+
+        // 页面加载完成后自动检查年份数据
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAndShowYearWarningInDashboard();
         });
     </script>
 </body>

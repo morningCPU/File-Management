@@ -32,4 +32,17 @@
         from
             courses
     </select>
+    
+    <!--查询所有不同的年份-->    
+    <!--List<String> selectAllYears();-->
+    <select id="selectAllYears" resultType="java.lang.String">
+        select distinct
+            year
+        from
+            courses
+        where
+            year is not null and year != ''
+        order by
+            year desc
+    </select>
 </mapper>

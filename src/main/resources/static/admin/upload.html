@@ -245,7 +245,8 @@
             <div style="text-align: center; margin-top: 20px;">
                 <button class="btn btn-primary" id="uploadBtn" disabled style="margin-right: 15px;">上传文件</button>
                 <a href="./courses.html" class="btn btn-primary" style="text-decoration: none;">查看课程数据</a>
-                <a href="./dashboard.html" class="btn btn-primary" style="margin-left: 15px;text-decoration: none;">返回控制面板</a>
+                <a href="./dashboard.html" class="btn btn-primary"
+                    style="margin-left: 15px;text-decoration: none;">返回控制面板</a>
             </div>
 
             <div class="loading" id="loading">
@@ -269,6 +270,82 @@
         const result = document.getElementById('result');
         const resultTitle = document.getElementById('resultTitle');
         const resultContent = document.getElementById('resultContent');
+
+        // 生成所需年份范围的函数
+        function generateRequiredYears(testDate = new Date()) {
+            const currentYear = testDate.getFullYear();
+            const currentMonth = testDate.getMonth() + 1; // getMonth()返回0-11
+
+            let requiredYears = [];
+
+            // 如果是9-12月或1-2月，使用当前年份和之前3年
+            // 如果是3-8月，使用前一年和之前3年
+            const baseYear = (currentMonth >= 9 || currentMonth <= 2) ? currentYear : currentYear - 1;
+
+            // 生成最近4年
+            for (let i = 0; i < 4; i++) {
+                requiredYears.push(baseYear - i);
+            }
+
+            // 按照从大到小排序
+            requiredYears.sort((a, b) => b - a);
+
+            return requiredYears;
+        }
+
+        // 测试函数，用于验证不同月份的年份范围生成
+        function testYearOptions() {
+            // 测试9月（应该返回当前年和之前3年）
+            const september = new Date();
+            september.setMonth(8); // 9月
+            console.log('9月所需年份范围:', generateRequiredYears(september));
+
+            // 测试2月（应该返回当前年和之前3年）
+            const february = new Date();
+            february.setMonth(1); // 2月
+            console.log('2月所需年份范围:', generateRequiredYears(february));
+
+            // 测试6月（应该返回前一年和之前3年）
+            const june = new Date();
+            june.setMonth(5); // 6月
+            console.log('6月所需年份范围:', generateRequiredYears(june));
+        }
+
+        // 检查数据库中是否有足够的年份数据
+        async function checkDatabaseYears() {
+            try {
+                // 获取所需的年份范围
+                const requiredYears = generateRequiredYears();
+                console.log('当前所需年份范围:', requiredYears);
+
+                // 从后端获取已有的课程年份数据
+                const response = await fetch('/api/courses/years');
+
+                if (!response.ok) {
+                    console.error('获取课程年份数据失败:', response.statusText);
+                    return { requiredYears, missingYears: requiredYears, hasMissingYears: true };
+                }
+
+                const data = await response.json();
+                const existingYears = data || [];
+                console.log('数据库中已有的年份:', existingYears);
+
+                // 找出缺失的年份
+                const missingYears = requiredYears.filter(year => !existingYears.includes(year.toString()));
+
+                return {
+                    requiredYears,
+                    existingYears,
+                    missingYears,
+                    hasMissingYears: missingYears.length > 0
+                };
+            } catch (error) {
+                console.error('检查年份数据时发生错误:', error);
+                // 出错时假设所有年份都缺失，确保用户能得到提醒
+                const requiredYears = generateRequiredYears();
+                return { requiredYears, missingYears: requiredYears, hasMissingYears: true };
+            }
+        }
 
         let selectedFiles = [];
 
@@ -306,9 +383,138 @@
             handleFiles(files);
         }
 
+        // 检查数据库年份数据是否充足并显示提示
+        async function checkAndShowYearWarning() {
+            const result = await checkDatabaseYears();
+
+            if (result.hasMissingYears) {
+                // 构建提示信息
+                const currentYear = new Date().getFullYear();
+                const currentMonth = new Date().getMonth() + 1;
+                let periodText = '';
+
+                if (currentMonth >= 9 || currentMonth <= 2) {
+                    periodText = `${currentYear}年9-12月和${currentYear + 1}年1-2月`;
+                } else {
+                    periodText = `${currentYear}年3-8月`;
+                }
+
+                const warningMessage = `系统检测到资料不充足：为了支持${periodText}的数据处理，需要上传以下年份的培养方案文件：${result.missingYears.join('年、')}年。`;
+
+                // 显示警告提示
+                showYearWarning(warningMessage);
+            } else {
+                // 如果没有缺失，隐藏警告
+                hideYearWarning();
+            }
+        }
+
+        // 显示年份缺失警告
+        function showYearWarning(message) {
+            let warningDiv = document.getElementById('yearWarning');
+
+            if (!warningDiv) {
+                // 创建警告元素
+                warningDiv = document.createElement('div');
+                warningDiv.id = 'yearWarning';
+                warningDiv.className = 'year-warning';
+                warningDiv.style.cssText = `
+                    background-color: #fff7e6;
+                    border: 1px solid #ffbb96;
+                    border-radius: 4px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    color: #d46b08;
+                    font-size: 14px;
+                `;
+
+                // 插入到上传区域上方
+                const uploadBox = document.querySelector('.upload-box');
+                uploadBox.insertBefore(warningDiv, uploadBox.firstChild);
+            }
+
+            warningDiv.textContent = message;
+            warningDiv.style.display = 'block';
+        }
+
+        // 隐藏年份缺失警告
+        function hideYearWarning() {
+            const warningDiv = document.getElementById('yearWarning');
+            if (warningDiv) {
+                warningDiv.style.display = 'none';
+            }
+        }
+
+        // 综合测试函数，测试不同时间点的完整功能
+        async function testAllYearScenarios() {
+            console.log('=== 开始测试不同时间点的年份检查功能 ===');
+
+            // 测试场景1：9月（需要当年和前3年）
+            console.log('\n测试场景1：9月份');
+            simulateTimeAndTest(new Date(new Date().getFullYear(), 8, 1)); // 9月
+
+            // 测试场景2：2月（需要当年和前3年）
+            console.log('\n测试场景2：2月份');
+            simulateTimeAndTest(new Date(new Date().getFullYear(), 1, 1)); // 2月
+
+            // 测试场景3：6月（需要前一年和前3年）
+            console.log('\n测试场景3：6月份');
+            simulateTimeAndTest(new Date(new Date().getFullYear(), 5, 1)); // 6月
+
+            console.log('\n=== 测试完成 ===');
+        }
+
+        // 模拟特定时间并测试功能
+        async function simulateTimeAndTest(simulatedDate) {
+            // 临时替换Date构造函数
+            const originalDate = window.Date;
+            window.Date = function (...args) {
+                if (args.length === 0) return simulatedDate;
+                return new originalDate(...args);
+            };
+            window.Date.prototype = originalDate.prototype;
+
+            try {
+                // 获取模拟时间下的年份范围
+                const testDate = new Date();
+                console.log(`当前模拟时间: ${testDate.getFullYear()}年${testDate.getMonth() + 1}月`);
+                const requiredYears = generateRequiredYears(testDate);
+                console.log(`计算得到的所需年份范围: ${requiredYears}`);
+
+                // 模拟检查结果显示
+                const mockResult = {
+                    hasMissingYears: true,
+                    missingYears: requiredYears.slice(0, 2) // 模拟缺失前两个年份
+                };
+
+                // 构建提示信息
+                const currentYear = testDate.getFullYear();
+                const currentMonth = testDate.getMonth() + 1;
+                let periodText = '';
+
+                if (currentMonth >= 9 || currentMonth <= 2) {
+                    periodText = `${currentYear}年9-12月和${currentYear + 1}年1-2月`;
+                } else {
+                    periodText = `${currentYear}年3-8月`;
+                }
+
+                const warningMessage = `系统检测到资料不充足：为了支持${periodText}的数据处理，需要上传以下年份的培养方案文件：${mockResult.missingYears.join('年、')}年。`;
+                console.log(`生成的提示信息: ${warningMessage}`);
+            } finally {
+                // 恢复原始Date构造函数
+                window.Date = originalDate;
+            }
+        }
+
         // 点击区域选择文件
         dropArea.addEventListener('click', () => {
             fileInput.click();
+        });
+
+        // 页面加载完成后自动检查年份数据
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAndShowYearWarning();
+            console.log('年份数据检查完成');
         });
 
         fileInput.addEventListener('change', () => {

@@ -53,4 +53,11 @@ public class CourseService {
     public List<Course> getAllCourses() {
         return courseMapper.selectAllCourses();
     }
+    
+    /**
+     * 获取所有不同的年份
+     */
+    public List<String> getAllYears() {
+        return courseMapper.selectAllYears();
+    }
 }

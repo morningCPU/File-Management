@@ -25,5 +25,14 @@ public class CourseController {
         List<Course> courses = courseService.getAllCourses();
         return ResponseEntity.ok(courses);
     }
+    
+    /**
+     * 获取所有不同的年份
+     */
+    @GetMapping("/years")
+    public ResponseEntity<List<String>> getAllYears() {
+        List<String> years = courseService.getAllYears();
+        return ResponseEntity.ok(years);
+    }
 }
 
