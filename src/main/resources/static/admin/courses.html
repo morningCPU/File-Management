@@ -301,6 +301,7 @@
                     <input type="text" id="searchInput" class="search-input" placeholder="搜索课程名称" />
                     <button id="searchBtn" class="btn btn-primary">搜索</button>
                     <button id="refreshBtn" class="btn btn-default">刷新</button>
+                    <button id="addCourseBtn" class="btn btn-success" style="margin-left: 10px;">手动添加课程</button>
                 </div>
             </div>
 
@@ -348,6 +349,143 @@
             </div>
         </div>
     </div>
+
+    <!-- 手动添加课程的模态框 -->
+    <div id="addCourseModal" class="modal"
+        style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content"
+            style="background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>手动添加课程</h2>
+                <span class="close-modal" style="font-size: 28px; cursor: pointer;">&times;</span>
+            </div>
+
+            <form id="addCourseForm">
+                <div class="form-row" style="display: flex; flex-wrap: wrap; margin: 0 -10px 15px;">
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseYear">年份 <span style="color: red;">*</span></label>
+                        <input type="number" id="courseYear" class="form-input" required placeholder="请输入年份，如：2024">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseType">课程类型 <span style="color: red;">*</span></label>
+                        <input type="text" id="courseType" class="form-input" required placeholder="请输入课程类型">
+                    </div>
+
+                    <div class="form-group" style="width: 100%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseName">课程名称 <span style="color: red;">*</span></label>
+                        <input type="text" id="courseName" class="form-input" required placeholder="请输入课程名称">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseNature">课程性质</label>
+                        <input type="text" id="courseNature" class="form-input" placeholder="请输入课程性质">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseCredits">学分</label>
+                        <input type="number" step="0.5" id="courseCredits" class="form-input" placeholder="请输入学分">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="coursePracticeCredits">实践学分</label>
+                        <input type="number" step="0.5" id="coursePracticeCredits" class="form-input"
+                            placeholder="请输入实践学分">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseSemester">学期</label>
+                        <input type="text" id="courseSemester" class="form-input" placeholder="请输入学期，如：第1学期">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseSchool">学院</label>
+                        <input type="text" id="courseSchool" class="form-input" placeholder="请输入学院">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseIndicators">指标点</label>
+                        <input type="text" id="courseIndicators" class="form-input" placeholder="请输入指标点">
+                    </div>
+
+                    <div class="form-group" style="width: 100%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="courseNotes">备注</label>
+                        <textarea id="courseNotes" class="form-input" rows="3" placeholder="请输入备注信息"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions"
+                    style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" id="cancelAddCourse" class="btn btn-default">取消</button>
+                    <button type="submit" id="submitAddCourse" class="btn btn-primary">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 添加模态框的样式 -->
+    <style>
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-default {
+            background-color: white;
+            border-color: #d9d9d9;
+            color: #333;
+        }
+
+        .btn-default:hover {
+            border-color: #40a9ff;
+            color: #40a9ff;
+        }
+
+        .btn-success {
+            background-color: #52c41a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #73d13d;
+        }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -752,6 +890,11 @@
             const yearFilter = document.getElementById('yearFilter');
             const searchBtn = document.getElementById('searchBtn');
             const refreshBtn = document.getElementById('refreshBtn');
+            const addCourseBtn = document.getElementById('addCourseBtn');
+            const addCourseModal = document.getElementById('addCourseModal');
+            const closeModalBtn = document.querySelector('.close-modal');
+            const cancelAddCourseBtn = document.getElementById('cancelAddCourse');
+            const addCourseForm = document.getElementById('addCourseForm');
 
 
             let allCourses = [];
@@ -788,6 +931,87 @@
                     currentPageNum = 1;
                     filterCourses();
                 }
+            });
+
+            // 打开添加课程模态框
+            addCourseBtn.addEventListener('click', () => {
+                addCourseModal.style.display = 'block';
+                // 重置表单
+                addCourseForm.reset();
+            });
+
+            // 关闭模态框
+            function closeModal() {
+                addCourseModal.style.display = 'none';
+            }
+
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelAddCourseBtn.addEventListener('click', closeModal);
+
+            // 点击模态框外部关闭
+            window.addEventListener('click', (e) => {
+                if (e.target === addCourseModal) {
+                    closeModal();
+                }
+            });
+
+            // 表单提交处理
+            addCourseForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                // 收集表单数据
+                const courseData = {
+                    year: document.getElementById('courseYear').value,
+                    courseType: document.getElementById('courseType').value,
+                    courseName: document.getElementById('courseName').value,
+                    nature: document.getElementById('courseNature').value || null,
+                    credits: document.getElementById('courseCredits').value ? parseFloat(document.getElementById('courseCredits').value) : null,
+                    practiceCredits: document.getElementById('coursePracticeCredits').value ? parseFloat(document.getElementById('coursePracticeCredits').value) : null,
+                    semester: document.getElementById('courseSemester').value || null,
+                    school: document.getElementById('courseSchool').value || null,
+                    indicators: document.getElementById('courseIndicators').value || null,
+                    notes: document.getElementById('courseNotes').value || null
+                };
+
+                // 显示加载状态
+                const submitBtn = document.getElementById('submitAddCourse');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = '提交中...';
+
+                // 发送请求保存课程
+                fetch('/api/courses/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(courseData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('网络响应错误');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) { // 检查success字段
+                            alert('课程添加成功！');
+                            closeModal();
+                            // 重新加载课程数据
+                            loadCourses();
+                        } else {
+                            alert('课程添加失败：' + (data.error || data.message || '未知错误'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('添加课程失败:', error);
+                        alert('添加课程失败，请稍后重试');
+                    })
+                    .finally(() => {
+                        // 恢复按钮状态
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    });
             });
 
             // 上一页按钮事件

@@ -290,11 +290,238 @@
         <div class="action-buttons">
             <button id="backBtn" class="btn btn-default">返回课程列表</button>
             <button id="refreshBtn" class="btn btn-primary">刷新数据</button>
+            <button id="addTeacherBtn" class="btn btn-success">手动添加教师</button>
         </div>
     </div>
 
+    <!-- 手动添加教师的模态框 -->
+    <div id="addTeacherModal" class="modal"
+        style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content"
+            style="background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>手动添加教师信息</h2>
+                <span class="close-modal" style="font-size: 28px; cursor: pointer;">&times;</span>
+            </div>
+
+            <form id="addTeacherForm">
+                <div class="form-row" style="display: flex; flex-wrap: wrap; margin: 0 -10px 15px;">
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherSemester">学期 <span style="color: red;">*</span></label>
+                        <input type="text" id="teacherSemester" class="form-input" required
+                            placeholder="请输入学期，如：2024-2025-1">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherCourseName">课程名称 <span style="color: red;">*</span></label>
+                        <input type="text" id="teacherCourseName" class="form-input" required placeholder="请输入课程名称">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherName">教师姓名 <span style="color: red;">*</span></label>
+                        <input type="text" id="teacherName" class="form-input" required placeholder="请输入教师姓名">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherTitle">职称</label>
+                        <input type="text" id="teacherTitle" class="form-input" placeholder="请输入教师职称">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherCourseCode">课程代码</label>
+                        <input type="text" id="teacherCourseCode" class="form-input" placeholder="请输入课程代码">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherSelectCode">选课代码</label>
+                        <input type="text" id="teacherSelectCode" class="form-input" placeholder="请输入选课代码">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherTeachingClass">教学班</label>
+                        <input type="text" id="teacherTeachingClass" class="form-input" placeholder="请输入教学班">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherDepartment">开课部门</label>
+                        <input type="text" id="teacherDepartment" class="form-input" placeholder="请输入开课部门">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherCredits">学分</label>
+                        <input type="number" step="0.5" id="teacherCredits" class="form-input" placeholder="请输入学分">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherNature">课程性质</label>
+                        <input type="text" id="teacherNature" class="form-input" placeholder="请输入课程性质">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherCampus">校区</label>
+                        <input type="text" id="teacherCampus" class="form-input" placeholder="请输入校区">
+                    </div>
+
+                    <div class="form-group" style="width: 50%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherStatus">状态</label>
+                        <input type="text" id="teacherStatus" class="form-input" placeholder="请输入状态">
+                    </div>
+
+                    <div class="form-group" style="width: 100%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherTimeLocation">时间地点</label>
+                        <input type="text" id="teacherTimeLocation" class="form-input" placeholder="请输入时间地点">
+                    </div>
+
+                    <div class="form-group" style="width: 100%; padding: 0 10px; margin-bottom: 15px;">
+                        <label for="teacherPreferred">备注</label>
+                        <textarea id="teacherPreferred" class="form-input" rows="3" placeholder="请输入备注信息"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions"
+                    style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" id="cancelAddTeacher" class="btn btn-default">取消</button>
+                    <button type="submit" id="submitAddTeacher" class="btn btn-primary">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 添加模态框的样式 -->
+    <style>
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .btn-success {
+            background-color: #52c41a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #73d13d;
+        }
+    </style>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // 手动添加教师相关元素
+            const addTeacherBtn = document.getElementById('addTeacherBtn');
+            const addTeacherModal = document.getElementById('addTeacherModal');
+            const closeModalBtn = document.querySelector('.close-modal');
+            const cancelAddTeacherBtn = document.getElementById('cancelAddTeacher');
+            const addTeacherForm = document.getElementById('addTeacherForm');
+
+            // 打开模态框
+            function openModal() {
+                addTeacherModal.style.display = 'block';
+            }
+
+            // 关闭模态框
+            function closeModal() {
+                addTeacherModal.style.display = 'none';
+                addTeacherForm.reset();
+            }
+
+            // 模态框事件监听
+            if (addTeacherBtn) addTeacherBtn.addEventListener('click', openModal);
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+            if (cancelAddTeacherBtn) cancelAddTeacherBtn.addEventListener('click', closeModal);
+
+            // 点击模态框外部关闭
+            window.addEventListener('click', function (event) {
+                if (event.target === addTeacherModal) {
+                    closeModal();
+                }
+            });
+
+            // 表单提交处理
+            if (addTeacherForm) {
+                addTeacherForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    // 显示加载状态
+                    const submitBtn = document.getElementById('submitAddTeacher');
+                    const originalBtnText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '提交中...';
+
+                    // 收集表单数据
+                    const teacherData = {
+                        semester: document.getElementById('teacherSemester').value.trim(),
+                        courseName: document.getElementById('teacherCourseName').value.trim(),
+                        teacher: document.getElementById('teacherName').value.trim(),
+                        title: document.getElementById('teacherTitle').value.trim(),
+                        courseCode: document.getElementById('teacherCourseCode').value.trim(),
+                        selectCode: document.getElementById('teacherSelectCode').value.trim(),
+                        teachingClass: document.getElementById('teacherTeachingClass').value.trim(),
+                        department: document.getElementById('teacherDepartment').value.trim(),
+                        credits: document.getElementById('teacherCredits').value ? parseFloat(document.getElementById('teacherCredits').value) : null,
+                        nature: document.getElementById('teacherNature').value.trim(),
+                        campus: document.getElementById('teacherCampus').value.trim(),
+                        status: document.getElementById('teacherStatus').value.trim(),
+                        timeLocation: document.getElementById('teacherTimeLocation').value.trim(),
+                        preferred: document.getElementById('teacherPreferred').value.trim()
+                    };
+
+                    // 发送请求保存教师信息
+                    fetch('/api/teachers/save', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(teacherData)
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('服务器响应错误');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) { // 检查success字段
+                                // 成功提示
+                                alert('教师信息添加成功！');
+                                closeModal();
+                                // 重新加载教师列表
+                                if (window.loadTeachers) {
+                                    loadTeachers();
+                                }
+                            } else {
+                                // 失败提示
+                                alert('添加失败：' + (data.message || '未知错误'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('错误：', error);
+                            alert('添加失败：' + error.message);
+                        })
+                        .finally(() => {
+                            // 恢复按钮状态
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = originalBtnText;
+                        });
+                });
+            }
             // 获取DOM元素
             const loading = document.getElementById('loading');
             const emptyState = document.getElementById('emptyState');
@@ -823,11 +1050,18 @@
 
             // 返回按钮事件处理（增强版）
             function setupBackButton() {
+                // 检查并定义一个用于原生JS的:contains()实现
+                // 这对于在document.querySelector链中是必需的
+                const containsTextSelector = (tag, text) => {
+                    const elements = Array.from(document.querySelectorAll(tag));
+                    return elements.find(el => el.textContent.includes(text));
+                };
+
                 // 尝试获取返回按钮的多种方式
                 const backBtn = document.getElementById('backBtn') ||
                     document.querySelector('[id*="back"],[class*="back"]') ||
-                    document.querySelector('button:contains("返回")') ||
-                    document.querySelector('a:contains("返回")');
+                    containsTextSelector('button', '返回') || // 使用自定义函数替代:contains()
+                    containsTextSelector('a', '返回');       // 使用自定义函数替代:contains()
 
                 if (backBtn) {
                     console.log('找到返回按钮，绑定事件');
@@ -839,7 +1073,8 @@
                     newBackBtn.addEventListener('click', function (e) {
                         e.preventDefault();
                         console.log('返回按钮点击');
-                        if (isCreateTaskMode) {
+                        // 假设 isCreateTaskMode 是在全局或此作用域中定义的
+                        if (typeof isCreateTaskMode !== 'undefined' && isCreateTaskMode) {
                             console.log('跳转到: courses.html?createTask=true');
                             window.location.href = 'courses.html?createTask=true';
                         } else {
@@ -850,14 +1085,17 @@
                 } else {
                     console.error('未找到返回按钮');
                     // 添加备用方案：在页面顶部添加返回链接
+                    // 确保 isCreateTaskMode 可用
+                    const isCreateTaskModeValue = (typeof isCreateTaskMode !== 'undefined' && isCreateTaskMode) ? true : false;
+
                     const backLink = document.createElement('div');
                     backLink.className = 'back-link-container';
                     backLink.innerHTML = `
-                        <a href="courses.html${isCreateTaskMode ? '?createTask=true' : ''}" 
-                           class="btn btn-primary back-link">
-                            返回课程列表
-                        </a>
-                    `;
+            <a href="courses.html${isCreateTaskModeValue ? '?createTask=true' : ''}"
+                class="btn btn-primary back-link">
+                返回课程列表
+            </a>
+        `;
 
                     const mainContent = document.querySelector('.content') ||
                         document.querySelector('.content-wrapper');
@@ -872,27 +1110,45 @@
 
             // 刷新按钮事件处理（增强版）
             function setupRefreshButton() {
+                // 检查并定义一个用于原生JS的:contains()实现
+                // 此函数遍历指定标签元素，返回第一个textContent包含目标文本的元素
+                const containsTextSelector = (tag, text) => {
+                    // 确保 document.querySelectorAll() 返回一个可迭代的 NodeList
+                    const elements = Array.from(document.querySelectorAll(tag));
+                    // 使用 find() 方法找到第一个包含目标文本的元素
+                    return elements.find(el => el.textContent.includes(text));
+                };
+
                 // 尝试获取刷新按钮的多种方式
                 const refreshBtn = document.getElementById('refreshBtn') ||
                     document.querySelector('[id*="refresh"],[class*="refresh"]') ||
-                    document.querySelector('button:contains("刷新")') ||
-                    document.querySelector('a:contains("刷新")');
+                    containsTextSelector('button', '刷新') || // 使用自定义函数替代:contains()
+                    containsTextSelector('a', '刷新');       // 使用自定义函数替代:contains()
 
                 if (refreshBtn) {
                     console.log('找到刷新按钮，绑定事件');
-                    // 移除可能存在的旧事件监听器
+
+                    // --- 克隆并替换以移除旧事件监听器 ---
                     const newRefreshBtn = refreshBtn.cloneNode(true);
                     refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
+                    // ------------------------------------
 
                     // 重新绑定事件
                     newRefreshBtn.addEventListener('click', function (e) {
                         e.preventDefault();
                         console.log('刷新按钮点击');
-                        currentPageNum = 1; // 重置到第一页
 
-                        // 显示加载中提示
-                        if (loading) {
+                        // 确保 currentPageNum 是一个全局或可访问的变量
+                        if (typeof currentPageNum !== 'undefined') {
+                            currentPageNum = 1; // 重置到第一页
+                        }
+
+                        // 显示加载中提示 (假设 loading 是一个全局或可访问的元素引用)
+                        // 并且假设 loading 变量已在其他地方定义和获取
+                        if (typeof loading !== 'undefined' && loading && loading.style) {
                             loading.style.display = 'flex';
+                        } else {
+                            console.warn('加载提示元素 (loading) 未找到或未定义');
                         }
 
                         // 重新加载数据
@@ -905,19 +1161,23 @@
                     });
                 } else {
                     console.error('未找到刷新按钮');
-                    // 添加备用方案：在页面上添加刷新按钮
+
+                    // --- 备用方案：在页面上添加刷新按钮 ---
                     const refreshButton = document.createElement('button');
                     refreshButton.className = 'btn btn-secondary refresh-button';
                     refreshButton.textContent = '刷新数据';
 
                     refreshButton.addEventListener('click', function () {
                         console.log('备用刷新按钮点击');
-                        currentPageNum = 1;
+                        if (typeof currentPageNum !== 'undefined') {
+                            currentPageNum = 1;
+                        }
                         if (typeof loadTeachers === 'function') {
                             loadTeachers();
                         }
                     });
 
+                    // 尝试找到一个合适的位置来插入备用按钮
                     const actionBar = document.querySelector('.btn-group') ||
                         document.querySelector('.action-bar') ||
                         document.querySelector('.btn-toolbar') ||

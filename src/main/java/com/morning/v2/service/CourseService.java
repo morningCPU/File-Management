@@ -43,7 +43,12 @@ public class CourseService {
      */
     public void saveCourse(Course course) {
         if (course != null) {
-            courseMapper.insertCourse(course);
+            try {
+                courseMapper.insertCourse(course);
+            } catch (Exception e) {
+                e.printStackTrace(); // 打印堆栈信息
+                throw e; // 重新抛出异常
+            }
         }
     }
     

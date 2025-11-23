@@ -73,5 +73,43 @@ public class TeacherController {
          // 直接调用服务层获取教师列表并返回所有数据
          return teacherService.getTeacherList(semester, courseName);
      }
+     
+     /**
+      * 保存单个教师信息
+      * @param teacher 教师对象
+      * @return 处理结果
+      */
+     @PostMapping("/save")
+     public Map<String, Object> saveTeacher(@RequestBody Teacher teacher) {
+         Map<String, Object> result = new HashMap<>();
+         
+         try {
+             // 验证必要字段
+             if (teacher == null || teacher.getSemester() == null || teacher.getCourseName() == null || teacher.getTeacher() == null) {
+                 result.put("success", false);
+                 result.put("message", "学期、课程名称和教师姓名不能为空");
+                 return result;
+             }
+             
+             // 调用服务层保存教师信息
+             int savedRows = teacherService.saveTeacher(teacher);
+             
+             if (savedRows > 0) {
+                 result.put("success", true);
+                 result.put("message", "教师信息保存成功");
+                 result.put("count", savedRows);
+             } else {
+                 result.put("success", false);
+                 result.put("message", "教师信息保存失败");
+             }
+             
+         } catch (Exception e) {
+             result.put("success", false);
+             result.put("message", "处理失败: " + e.getMessage());
+             e.printStackTrace();
+         }
+         
+         return result;
+     }
 }
 

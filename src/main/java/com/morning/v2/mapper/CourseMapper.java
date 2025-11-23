@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface CourseMapper {
-    int insertCourse(@Param("course") Course course);
+    int insertCourse(Course course);
     int insertCoursesBatch(@Param("courses") List<Course> courses);
     List<Course> selectAllCourses();
     List<String> selectAllYears();
