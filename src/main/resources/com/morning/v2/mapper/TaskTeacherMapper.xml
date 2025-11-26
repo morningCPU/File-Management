@@ -39,32 +39,7 @@
         where
             task_id = #{taskId}
     </select>
-    
-    <!-- 根据教师姓名查询关联任务 -->
-    <!-- List<TaskTeacher> selectByTeacherName(@Param("teacherName") String teacherName); -->
-    <select id="selectByTeacherName" resultType="com.morning.v2.pojo.TaskTeacher">
-        select
-            id, task_id as taskId, course_code as courseCode, course_name as courseName,
-            teacher_name as teacherName, title, department, course_nature as courseNature,
-            evaluation_status as evaluationStatus, evaluation_time as evaluationTime
-        from
-            task_teacher
-        where
-            teacher_name like concat('%', #{teacherName}, '%')
-    </select>
-    
-    <!-- 更新评价状态 -->
-    <!-- int updateEvaluationStatus(@Param("id") Long id, @Param("status") String status); -->
-    <update id="updateEvaluationStatus">
-        update
-            task_teacher
-        set
-            evaluation_status = #{status},
-            evaluation_time = now()
-        where
-            id = #{id}
-    </update>
-    
+
     <!-- 根据任务ID删除关联 -->
     <!-- int deleteByTaskId(@Param("taskId") Long taskId); -->
     <delete id="deleteByTaskId">

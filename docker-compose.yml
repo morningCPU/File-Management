@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # MySQL数据库服务
+  mysql:
+    image: mysql:8.0
+    container_name: readword-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: course
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 可选：挂载初始化SQL脚本
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 应用服务
+  app:
+    build: .
+    container_name: readword-app
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # 覆盖配置文件中的数据库连接信息
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/course?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  mysql-data:
+    driver: local

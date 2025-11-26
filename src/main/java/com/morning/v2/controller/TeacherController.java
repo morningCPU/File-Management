@@ -5,6 +5,7 @@ import com.morning.v2.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,9 +71,15 @@ public class TeacherController {
      */
     @GetMapping("/list")
      public List<?> getTeachersList(@RequestParam String semester, @RequestParam String courseName) {
-         // 直接调用服务层获取教师列表并返回所有数据
-         return teacherService.getTeacherList(semester, courseName);
-     }
+         try {
+             // 调用服务层获取教师列表
+             return teacherService.getTeacherList(semester, courseName);
+         } catch (Exception e) {
+             // 记录异常信息但返回空列表，避免Docker环境中因无法访问外部网站导致500错误
+             System.err.println("获取教师列表失败: " + e.getMessage());
+             return new ArrayList<>();
+         }
+      }
      
      /**
       * 保存单个教师信息

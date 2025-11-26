@@ -33,34 +33,7 @@
         order by
             create_time desc
     </select>
-    
-    <!-- 更新任务状态 -->
-    <!-- int updateTaskStatus(@Param("id") Long id, @Param("status") String status); -->
-    <update id="updateTaskStatus">
-        update
-            evaluation_task
-        set
-            status = #{status},
-            update_time = now()
-        where
-            id = #{id}
-    </update>
-    
-    <!-- 更新任务信息 -->
-    <!-- int updateTask(@Param("task") EvaluationTask task); -->
-    <update id="updateTask">
-        update
-            evaluation_task
-        set
-            task_name = #{task.taskName},
-            update_time = now(),
-            deadline = #{task.deadline},
-            status = #{task.status},
-            description = #{task.description}
-        where
-            id = #{task.id}
-    </update>
-    
+
     <!-- 删除任务 -->
     <!-- int deleteTask(@Param("id") Long id); -->
     <delete id="deleteTask">
